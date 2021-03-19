@@ -29,9 +29,11 @@ const getDiscordMembers = async (guild) => {
 };
 
 const getGW2Members = async () => {
-  const response = await axios.get(
-    `http://so-guild-manager.herokuapp.com/api/gw2/members`
-  );
+  const response = await axios.get(`https://api.guildwars2.com/v2/guild/${process.env.GW2_GUILD_ID}/members`, {
+    headers: {
+      Authorization: `Bearer ${process.env.GW2_API_KEY}`
+    }
+  });
   return response.data;
 };
 

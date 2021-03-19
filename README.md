@@ -10,6 +10,8 @@ Run Server using nodemon
 
 ## Environment Variables
 
-| Name      | Description           |
-| --------- | --------------------- |
-| BOT_TOKEN | Token for Discord Bot |
+| Name         | Description                 |
+| ------------ | --------------------------- |
+| BOT_TOKEN    | Token for Discord Bot       |
+| GW2_GUILD_ID | ID for GW2 Guild for Roster |
+| GW2_API_KEY  | API Key for Guild Leader    |
