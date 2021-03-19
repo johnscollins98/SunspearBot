@@ -2,6 +2,16 @@ require('dotenv').config();
 const { Client, MessageEmbed } = require('discord.js');
 const axios = require('axios');
 const client = new Client();
+const {
+  getMultipleRoles,
+  getMismatchedRoles,
+  getExcessGW2,
+  getExcessDiscord,
+  getNeedsPromotion,
+  sortDiscordMembers,
+  sortGW2Members,
+  getNoRoles,
+} = require('./utils/DataProcessing');
 
 const getRoster = async (category) => {
   const response = await axios.get(
@@ -53,7 +63,7 @@ const commands = async (msg) => {
 
     sendPagedEmbed(
       msg.channel,
-      await getRoster('gw2'),
+      sortGW2Members(await getRoster('gw2')),
       24,
       (o) => o.name,
       (o) => o.rank,
@@ -70,10 +80,127 @@ const commands = async (msg) => {
 
     sendPagedEmbed(
       msg.channel,
-      await getRoster('discord'),
+      sortDiscordMembers(await getRoster('discord')),
       24,
       (o) => o.name,
       (o) => (o.roles[0] ? o.roles[0].name : 'No Role'),
+      options
+    );
+  }
+
+  if (msg.content === '--excessGW2') {
+    const discord = await getRoster('discord');
+    const gw2 = await getRoster('gw2');
+    const excess = getExcessGW2(gw2, discord);
+
+    const options = {
+      title: 'Excess GW2',
+      color: '#00ff00',
+      description: `<@${msg.author.id}>, HERE IS YOUR RESPONSE: `,
+    };
+
+    sendPagedEmbed(
+      msg.channel,
+      excess,
+      24,
+      (o) => o.name,
+      (o) => o.rank,
+      options
+    );
+  }
+
+  if (msg.content === '--excessDiscord') {
+    const discord = await getRoster('discord');
+    const gw2 = await getRoster('gw2');
+    const excess = getExcessDiscord(gw2, discord);
+    const options = {
+      title: 'Excess Discord',
+      color: '#00ff00',
+      description: `<@${msg.author.id}>, HERE IS YOUR RESPONSE: `,
+    };
+
+    sendPagedEmbed(
+      msg.channel,
+      excess,
+      24,
+      (o) => o.name,
+      (o) => o.roles[0].name || 'No Role',
+      options
+    );
+  }
+
+  if (msg.content === '--requiredActions') {
+    const discord = await getRoster('discord');
+    const gw2 = await getRoster('gw2');
+
+    const records = [];
+
+    const excessGW2 = getExcessGW2(gw2, discord);
+    if (excessGW2.length) {
+      records.push({
+        key: 'Extra GW2',
+        value: excessGW2.map((o) => o.name),
+      });
+    }
+
+    const excessDiscord = getExcessDiscord(gw2, discord).filter(
+      (o) => !o.roles.find((r) => r.name === 'Bots' || r.name === 'Guest')
+    );
+    if (excessDiscord.length) {
+      records.push({
+        key: 'Extra Discord',
+        value: excessDiscord.map(
+          (o) => `${o.name} ${o.roles[0] ? `(${o.roles[0].name})` : ''}`
+        ),
+      });
+    }
+
+    const noRoles = getNoRoles(discord);
+    if (noRoles.length) {
+      records.push({
+        key: 'Has No Roles',
+        value: noRoles.map((o) => o.name),
+      });
+    }
+
+    const multipleRoles = getMultipleRoles(discord);
+    if (multipleRoles.length) {
+      records.push({
+        key: 'Has Multiple Roles',
+        value: multipleRoles.map(
+          (o) => `${o.name} (${o.roles.map((o) => o.name).join(', ')})`
+        ),
+      });
+    }
+
+    const mismatchedRoles = getMismatchedRoles(gw2, discord);
+    if (mismatchedRoles.length) {
+      records.push({
+        key: 'Mismatched Roles (GW2/Discord)',
+        value: mismatchedRoles,
+      });
+    }
+
+    const needsPromotion = getNeedsPromotion(gw2);
+    if (needsPromotion.length) {
+      records.push({
+        key: 'Needs Promotion',
+        value: needsPromotion.map((o) => o.name),
+      });
+    }
+
+    const options = {
+      title: 'Required Actions',
+      color: '#00ff00',
+      description: `<@${msg.author.id}>, HERE IS YOUR RESPONSE: `,
+    };
+
+    sendPagedEmbed(
+      msg.channel,
+      records,
+      9,
+      (o) => o.key,
+      (o) => o.value,
       options
     );
   }
@@ -85,12 +212,12 @@ const sendPagedEmbed = (
   pageLength,
   keyFunc,
   valFunc,
-  options
+  options = {}
 ) => {
   channel
     .send(generateEmbed(arr, 0, pageLength, keyFunc, valFunc, options))
     .then(async (message) => {
-      if (arr.pageLength < pageLength) return;
+      if (arr.length <= pageLength) return;
       await message.react('➡');
       await message.react('⏭');
       const collector = message.createReactionCollector(
