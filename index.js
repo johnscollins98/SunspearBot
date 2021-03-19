@@ -1,8 +1,9 @@
 require('dotenv').config();
 const { Client, MessageEmbed } = require('discord.js');
-const axios = require('axios');
 const client = new Client();
 const {
+  getDiscordMembers,
+  getGW2Members,
   getMultipleRoles,
   getMismatchedRoles,
   getExcessGW2,
@@ -12,13 +13,6 @@ const {
   sortGW2Members,
   getNoRoles,
 } = require('./utils/DataProcessing');
-
-const getRoster = async (category) => {
-  const response = await axios.get(
-    `http://so-guild-manager.herokuapp.com/api/${category}/members`
-  );
-  return response.data;
-};
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
@@ -63,7 +57,7 @@ const commands = async (msg) => {
 
     sendPagedEmbed(
       msg.channel,
-      sortGW2Members(await getRoster('gw2')),
+      sortGW2Members(await getGW2Members()),
       24,
       (o) => o.name,
       (o) => o.rank,
@@ -80,17 +74,17 @@ const commands = async (msg) => {
 
     sendPagedEmbed(
       msg.channel,
-      sortDiscordMembers(await getRoster('discord')),
+      sortDiscordMembers(await getDiscordMembers(msg.guild)),
       24,
       (o) => o.name,
-      (o) => (o.roles[0] ? o.roles[0].name : 'No Role'),
+      (o) => o.role || 'No Role',
       options
     );
   }
 
   if (msg.content === '--excessGW2') {
-    const discord = await getRoster('discord');
-    const gw2 = await getRoster('gw2');
+    const discord = await getDiscordMembers(msg.guild);
+    const gw2 = await getGW2Members();
     const excess = getExcessGW2(gw2, discord);
 
     const options = {
@@ -110,8 +104,8 @@ const commands = async (msg) => {
   }
 
   if (msg.content === '--excessDiscord') {
-    const discord = await getRoster('discord');
-    const gw2 = await getRoster('gw2');
+    const discord = await getDiscordMembers(msg.guild);
+    const gw2 = await getGW2Members();
     const excess = getExcessDiscord(gw2, discord);
     const options = {
       title: 'Excess Discord',
@@ -124,14 +118,14 @@ const commands = async (msg) => {
       excess,
       24,
       (o) => o.name,
-      (o) => o.roles[0].name || 'No Role',
+      (o) => o.role || 'No Role',
       options
     );
   }
 
   if (msg.content === '--requiredActions') {
-    const discord = await getRoster('discord');
-    const gw2 = await getRoster('gw2');
+    const discord = await getDiscordMembers(msg.guild);
+    const gw2 = await getGW2Members();
 
     const records = [];
 
@@ -144,14 +138,12 @@ const commands = async (msg) => {
     }
 
     const excessDiscord = getExcessDiscord(gw2, discord).filter(
-      (o) => !o.roles.find((r) => r.name === 'Bots' || r.name === 'Guest')
+      (o) => !o.role === 'Bots' && !o.role === 'Guest'
     );
     if (excessDiscord.length) {
       records.push({
         key: 'Extra Discord',
-        value: excessDiscord.map(
-          (o) => `${o.name} ${o.roles[0] ? `(${o.roles[0].name})` : ''}`
-        ),
+        value: excessDiscord.map((o) => `${o.name} (${o.role || 'No Role'})`),
       });
     }
 
@@ -168,7 +160,7 @@ const commands = async (msg) => {
       records.push({
         key: 'Has Multiple Roles',
         value: multipleRoles.map(
-          (o) => `${o.name} (${o.roles.map((o) => o.name).join(', ')})`
+          (o) => `${o.name} (${o.roles.join(', ')})`
         ),
       });
     }

@@ -1,3 +1,40 @@
+const axios = require('axios');
+
+const getDiscordMembers = async (guild) => {
+  const members = await guild.members.fetch();
+  const ranks = [
+    'Spearmarshal',
+    'General',
+    'Captain',
+    'First Spear',
+    'Second Spear',
+    'Bots',
+    'Guest',
+  ];
+
+  return members.array().map((m) => {
+    const roles = m.roles.cache
+      .array()
+      .filter((r) => ranks.includes(r.name))
+      .map((r) => r.name);
+    const role = roles[0];
+
+    return {
+      name: m.displayName,
+      role,
+      roles,
+      joined: m.joinedTimestamp,
+    };
+  });
+};
+
+const getGW2Members = async () => {
+  const response = await axios.get(
+    `http://so-guild-manager.herokuapp.com/api/gw2/members`
+  );
+  return response.data;
+};
+
 const getExcessGW2 = (gw2Members, discordMembers) => {
   const filtered = gw2Members.filter((gw2) => {
     const testName = gw2.name.split(".")[0].toLowerCase();
@@ -14,7 +51,7 @@ const getExcessDiscord = (gw2Members, discordMembers) => {
 }
 
 const getNoRoles = (discordMembers) => {
-  return discordMembers.filter(o => o.roles.length === 0);
+  return discordMembers.filter(o => !o.role);
 }
 
 const getMultipleRoles = (discordMembers) => {
@@ -28,12 +65,12 @@ const getMismatchedRoles = (gw2Members, discordMembers) => {
     if (!discordMember) return false;
     if (discordMember.roles.length !== 1) return false;
 
-    return discordMember.roles[0].name !== gw2.rank;
+    return discordMember.role !== gw2.rank;
   })
   .map(gw2 => {
     const testName = gw2.name.split(".")[0].toLowerCase();
     const discordMember = findDiscordRecord(testName, discordMembers);
-    return `${gw2.name} (${gw2.rank}/${discordMember.roles[0].name})`
+    return `${gw2.name} (${gw2.rank}/${discordMember.role})`
   })
 }
 
@@ -50,11 +87,9 @@ const getNeedsPromotion = (gw2Members) => {
 
 const sortDiscordMembers = (discordMembers) => {
   return discordMembers.sort((a, b) => {
-    let value = compareRank(a.roles[0], b.roles[0]);
+    let value = compareRank(a.role, b.role);
     if (value === 0) {
-      const bDate = new Date(b.joined);
-      const aDate = new Date(a.joined);
-      value = aDate - bDate;
+      value = compareDate(a.joined, b.joined);
     }
     return value;
   })
@@ -64,9 +99,7 @@ const sortGW2Members = (gw2Members) => {
   return gw2Members.sort((a, b) => {
     let value = compareRank(a.rank, b.rank);
     if (value === 0) {
-      const bDate = new Date(b.joined);
-      const aDate = new Date(a.joined);
-      value = aDate - bDate;
+      value = compareDate(a.joined, b.joined);
     }
     return value;
   });
@@ -108,6 +141,12 @@ const findDiscordRecord = (testName, discordMembers) => {
   return discordMember;
 }
 
+const compareDate = (aJoined, bJoined) => {
+  const bDate = new Date(bJoined);
+  const aDate = new Date(aJoined);
+  return aDate - bDate;
+}
+
 const compareRank = (aRank, bRank) => {
   const rankSortValues = {
     Spearmarshal: 9,
@@ -128,6 +167,8 @@ const compareRank = (aRank, bRank) => {
 };
 
 module.exports = {
+  getDiscordMembers,
+  getGW2Members,
   getExcessGW2,
   getExcessDiscord,
   getMultipleRoles,
