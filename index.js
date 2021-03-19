@@ -138,7 +138,7 @@ const commands = async (msg) => {
     }
 
     const excessDiscord = getExcessDiscord(gw2, discord).filter(
-      (o) => !o.role === 'Bots' && !o.role === 'Guest'
+      (o) => o.role !== 'Bots' && o.role !== 'Guest'
     );
     if (excessDiscord.length) {
       records.push({
@@ -159,9 +159,7 @@ const commands = async (msg) => {
     if (multipleRoles.length) {
       records.push({
         key: 'Has Multiple Roles',
-        value: multipleRoles.map(
-          (o) => `${o.name} (${o.roles.join(', ')})`
-        ),
+        value: multipleRoles.map((o) => `${o.name} (${o.roles.join(', ')})`),
       });
     }
 
