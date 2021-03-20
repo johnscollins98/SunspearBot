@@ -279,15 +279,19 @@ const generateEmbed = (
   if (thumbnailUrl) embed.setThumbnail(thumbnailUrl);
   if (imageUrl) embed.setImage(imageUrl);
 
-  embed.setFooter(
-    `Page ${start / len + 1}/${Math.ceil(arr.length / len)} (${len} per page, ${
-      arr.length
-    } total)`
-  );
+  if (arr.length) {
+    embed.setFooter(
+      `Page ${start / len + 1}/${Math.ceil(
+        arr.length / len
+      )} (${len} per page, ${arr.length} total entries)`
+    );
 
-  arr.slice(start, start + len).forEach((entry) => {
-    embed.addField(keyFunc(entry), valFunc(entry), true);
-  });
+    arr.slice(start, start + len).forEach((entry) => {
+      embed.addField(keyFunc(entry), valFunc(entry), inline=true);
+    });
+  } else {
+    embed.addField("👍 No Results!", "\u200b", inline=true);
+  }
 
   return embed;
 };
