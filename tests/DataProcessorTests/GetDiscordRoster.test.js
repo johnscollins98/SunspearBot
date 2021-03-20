@@ -4,6 +4,7 @@ const {
   mockDiscordMembers,
   mockGW2Members,
 } = require("../mocks/mockData");
+const MockDiscordUser = require("../mocks/MockDiscordUser");
 
 test("getDiscordRoster runs without failing", () => {
   const dataProcessor = new DataProcessor(
@@ -70,4 +71,26 @@ test("getDiscordRoster sorts properly", () => {
   });
 
   expect(dataProcessor.getDiscordRoster()).toEqual(expected);
+});
+
+test("getDiscordRoster filters non-valid roles, and sorts without roles", () => {
+  const ourDiscordMembers = [
+    ...mockDiscordMembers,
+    new MockDiscordUser("Mock", ["TestRoles"], 1234567),
+  ];
+
+  const dataProcessor = new DataProcessor(
+    mockGW2Members,
+    ourDiscordMembers,
+    mockValidRanks
+  );
+
+  const res = dataProcessor.getDiscordRoster();
+
+  expect(res[res.length - 1]).toEqual({
+    name: "Mock",
+    roles: [],
+    role: undefined,
+    joined: 1234567,
+  });
 });
