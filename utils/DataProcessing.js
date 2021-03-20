@@ -1,15 +1,29 @@
-const axios = require('axios');
+const axios = require("axios");
+const DiscordRepository = require("../repositories/DiscordRepository");
+const GW2Repository = require("../repositories/GW2Repository");
 
-const getDiscordMembers = async (guild) => {
-  const members = await guild.members.fetch();
+/**
+ * Get formatted discord members array
+ *
+ * @param {DiscordRepository} discordRepository  repo of discord data
+ * @returns {Promise<Array<{
+ *  name: string,
+ *  role: string,
+ *  roles:Array<string>,
+ *  joined:Number
+ * }>>} Formatted array of Discord Member objects
+ */
+const getDiscordMembers = async (discordRepository) => {
+  const members = await discordRepository.getMembers();
+
   const ranks = [
-    'Spearmarshal',
-    'General',
-    'Captain',
-    'First Spear',
-    'Second Spear',
-    'Bots',
-    'Guest',
+    "Spearmarshal",
+    "General",
+    "Captain",
+    "First Spear",
+    "Second Spear",
+    "Bots",
+    "Guest",
   ];
 
   return members.array().map((m) => {
@@ -28,13 +42,30 @@ const getDiscordMembers = async (guild) => {
   });
 };
 
-const getGW2Members = async () => {
-  const response = await axios.get(`https://api.guildwars2.com/v2/guild/${process.env.GW2_GUILD_ID}/members`, {
-    headers: {
-      Authorization: `Bearer ${process.env.GW2_API_KEY}`
-    }
-  });
-  return response.data;
+const mockRepo = {
+  getMembers: () => ({
+    array: () => [
+      {
+        displayName: "Elosia",
+        joinedTimestamp: 12344567,
+        roles: {
+          cache: {
+            array: () => [{ name: "Spearmarshal" }, { name: "Among Us" }],
+          },
+        },
+      },
+    ],
+  }),
+};
+
+/**
+ * Get GW2 Members
+ *
+ * @param {GW2Repository} gw2Repository repo for GW2 data
+ * @returns {Promise<Array<{ name: string, rank: string, joined: string }>>} Array of Member Objects
+ */
+const getGW2Members = async (gw2Repository) => {
+  return await gw2Repository.getMembers();
 };
 
 const getExcessGW2 = (gw2Members, discordMembers) => {
@@ -46,46 +77,51 @@ const getExcessGW2 = (gw2Members, discordMembers) => {
 };
 
 const getExcessDiscord = (gw2Members, discordMembers) => {
-  const filtered = discordMembers.filter(discordMember => {
-    return !gw2Members.some(m => discordMember.name.toLowerCase().includes(m.name.split(".")[0].toLowerCase()));
-  })
+  const filtered = discordMembers.filter((discordMember) => {
+    return !gw2Members.some((m) =>
+      discordMember.name
+        .toLowerCase()
+        .includes(m.name.split(".")[0].toLowerCase())
+    );
+  });
   return sortDiscordMembers(filtered);
-}
+};
 
 const getNoRoles = (discordMembers) => {
-  return discordMembers.filter(o => !o.role);
-}
+  return discordMembers.filter((o) => !o.role);
+};
 
 const getMultipleRoles = (discordMembers) => {
-  return discordMembers.filter(o => o.roles.length > 1);
-}
+  return discordMembers.filter((o) => o.roles.length > 1);
+};
 
 const getMismatchedRoles = (gw2Members, discordMembers) => {
-  return gw2Members.filter(gw2 => {
-    const testName = gw2.name.split(".")[0].toLowerCase();
-    const discordMember = findDiscordRecord(testName, discordMembers);
-    if (!discordMember) return false;
-    if (discordMember.roles.length !== 1) return false;
+  return gw2Members
+    .filter((gw2) => {
+      const testName = gw2.name.split(".")[0].toLowerCase();
+      const discordMember = findDiscordRecord(testName, discordMembers);
+      if (!discordMember) return false;
+      if (discordMember.roles.length !== 1) return false;
 
-    return discordMember.role !== gw2.rank;
-  })
-  .map(gw2 => {
-    const testName = gw2.name.split(".")[0].toLowerCase();
-    const discordMember = findDiscordRecord(testName, discordMembers);
-    return `${gw2.name} (${gw2.rank}/${discordMember.role})`
-  })
-}
+      return discordMember.role !== gw2.rank;
+    })
+    .map((gw2) => {
+      const testName = gw2.name.split(".")[0].toLowerCase();
+      const discordMember = findDiscordRecord(testName, discordMembers);
+      return `${gw2.name} (${gw2.rank}/${discordMember.role})`;
+    });
+};
 
 const getNeedsPromotion = (gw2Members) => {
-  return gw2Members.filter(gw2 => {
+  return gw2Members.filter((gw2) => {
     if (gw2.rank !== "Second Spear") return false;
 
     const date = new Date(gw2.joined.split("T")[0]);
     const diffMilliseconds = Math.abs(Date.now() - date);
     const diffDays = Math.floor(diffMilliseconds / (1000 * 60 * 60 * 24));
     return diffDays >= 14;
-  })
-}
+  });
+};
 
 const sortDiscordMembers = (discordMembers) => {
   return discordMembers.sort((a, b) => {
@@ -94,8 +130,8 @@ const sortDiscordMembers = (discordMembers) => {
       value = compareDate(a.joined, b.joined);
     }
     return value;
-  })
-}
+  });
+};
 
 const sortGW2Members = (gw2Members) => {
   return gw2Members.sort((a, b) => {
@@ -141,13 +177,13 @@ const findDiscordRecord = (testName, discordMembers) => {
   }
 
   return discordMember;
-}
+};
 
 const compareDate = (aJoined, bJoined) => {
   const bDate = new Date(bJoined);
   const aDate = new Date(aJoined);
   return aDate - bDate;
-}
+};
 
 const compareRank = (aRank, bRank) => {
   const rankSortValues = {
@@ -178,5 +214,5 @@ module.exports = {
   getMismatchedRoles,
   sortDiscordMembers,
   getNoRoles,
-  sortGW2Members
+  sortGW2Members,
 };

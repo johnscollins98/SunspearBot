@@ -1,5 +1,6 @@
 require('dotenv').config();
-const { Client, MessageEmbed } = require('discord.js');
+const { Client, MessageEmbed, Message } = require('discord.js');
+const DiscordRepository = require("./repositories/DiscordRepository");
 const client = new Client();
 const {
   getDiscordMembers,
@@ -25,6 +26,11 @@ client.on('message', async (msg) => {
   commands(msg);
 });
 
+/**
+ * Fun discord responses!
+ * 
+ * @param {Message} msg 
+ */
 const funResponses = (msg) => {
   if (msg.content.match(/[o|0]+h*[,|.|\s]*my*f*[,|.|\s]*g(?:[o|0]*d)?/gim)) {
     msg.reply('TRAMPOLINE.');
@@ -47,6 +53,11 @@ const funResponses = (msg) => {
   }
 };
 
+/**
+ * Discord Commands!
+ * 
+ * @param {Message} msg 
+ */
 const commands = async (msg) => {
   if (msg.content === '--guildRoster') {
     const options = {
@@ -74,7 +85,7 @@ const commands = async (msg) => {
 
     sendPagedEmbed(
       msg.channel,
-      sortDiscordMembers(await getDiscordMembers(msg.guild)),
+      sortDiscordMembers(await getDiscordMembers(new DiscordRepository(msg))),
       24,
       (o) => o.name,
       (o) => o.role || 'No Role',
@@ -83,7 +94,7 @@ const commands = async (msg) => {
   }
 
   if (msg.content === '--excessGW2') {
-    const discord = await getDiscordMembers(msg.guild);
+    const discord = await getDiscordMembers(new DiscordRepository(msg));
     const gw2 = await getGW2Members();
     const excess = getExcessGW2(gw2, discord);
 
@@ -104,7 +115,7 @@ const commands = async (msg) => {
   }
 
   if (msg.content === '--excessDiscord') {
-    const discord = await getDiscordMembers(msg.guild);
+    const discord = await getDiscordMembers(new DiscordRepository(msg));
     const gw2 = await getGW2Members();
     const excess = getExcessDiscord(gw2, discord);
     const options = {
@@ -124,7 +135,7 @@ const commands = async (msg) => {
   }
 
   if (msg.content === '--requiredActions') {
-    const discord = await getDiscordMembers(msg.guild);
+    const discord = await getDiscordMembers(new DiscordRepository(msg));
     const gw2 = await getGW2Members();
 
     const records = [];
