@@ -1,10 +1,10 @@
-const { Collection, GuildMember, Message } = require("discord.js");
+const { GuildMember, Message } = require('discord.js');
 
 class DiscordRepository {
   /**
    * Constructor
-   * 
-   * @param {Message} rootMessage 
+   *
+   * @param {Message} rootMessage
    */
   constructor(rootMessage) {
     this.rootMessage = rootMessage;
@@ -14,11 +14,16 @@ class DiscordRepository {
 
   /**
    * Get Discord Guild Members
-   * 
-   * @returns {Promise<Collection<string, GuildMember>>} collection of Discord Guild Members
+   *
+   * @returns {Promise<Array<GuildMember>>} collection of Discord Guild Members
    */
   async getMembers() {
-    return await this.guild.members.fetch();
+    try {
+      const collection = await this.guild.members.fetch();
+      return collection.array();
+    } catch (err) {
+      console.error(err);
+    }
   }
 }
 

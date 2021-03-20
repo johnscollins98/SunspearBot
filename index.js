@@ -1,19 +1,9 @@
 require('dotenv').config();
 const { Client, MessageEmbed, Message } = require('discord.js');
-const DiscordRepository = require("./repositories/DiscordRepository");
+const DiscordRepository = require('./repositories/DiscordRepository');
+const GW2Repository = require('./repositories/GW2Repository');
+const { DataProcessor } = require('./utils/DataProcessor');
 const client = new Client();
-const {
-  getDiscordMembers,
-  getGW2Members,
-  getMultipleRoles,
-  getMismatchedRoles,
-  getExcessGW2,
-  getExcessDiscord,
-  getNeedsPromotion,
-  sortDiscordMembers,
-  sortGW2Members,
-  getNoRoles,
-} = require('./utils/DataProcessing');
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
@@ -28,8 +18,8 @@ client.on('message', async (msg) => {
 
 /**
  * Fun discord responses!
- * 
- * @param {Message} msg 
+ *
+ * @param {Message} msg
  */
 const funResponses = (msg) => {
   if (msg.content.match(/[o|0]+h*[,|.|\s]*my*f*[,|.|\s]*g(?:[o|0]*d)?/gim)) {
@@ -55,10 +45,22 @@ const funResponses = (msg) => {
 
 /**
  * Discord Commands!
- * 
- * @param {Message} msg 
+ *
+ * @param {Message} msg
  */
 const commands = async (msg) => {
+  const gw2Repository = new GW2Repository(
+    process.env.GW2_GUILD_ID,
+    process.env.GW2_API_KEY
+  );
+  const gw2Members = await gw2Repository.getMembers();
+  const ranks = await gw2Repository.getRanks();
+
+  const discordRepository = new DiscordRepository(msg);
+  const discordMembers = await discordRepository.getMembers();
+
+  const dataProcessor = new DataProcessor(gw2Members, discordMembers, ranks);
+
   if (msg.content === '--guildRoster') {
     const options = {
       title: 'GW2 Roster',
@@ -68,7 +70,7 @@ const commands = async (msg) => {
 
     sendPagedEmbed(
       msg.channel,
-      sortGW2Members(await getGW2Members()),
+      dataProcessor.getSortedGW2(),
       24,
       (o) => o.name,
       (o) => o.rank,
@@ -85,7 +87,7 @@ const commands = async (msg) => {
 
     sendPagedEmbed(
       msg.channel,
-      sortDiscordMembers(await getDiscordMembers(new DiscordRepository(msg))),
+      dataProcessor.getSortedDiscord(),
       24,
       (o) => o.name,
       (o) => o.role || 'No Role',
@@ -94,10 +96,6 @@ const commands = async (msg) => {
   }
 
   if (msg.content === '--excessGW2') {
-    const discord = await getDiscordMembers(new DiscordRepository(msg));
-    const gw2 = await getGW2Members();
-    const excess = getExcessGW2(gw2, discord);
-
     const options = {
       title: 'Excess GW2',
       color: '#00ff00',
@@ -106,7 +104,7 @@ const commands = async (msg) => {
 
     sendPagedEmbed(
       msg.channel,
-      excess,
+      dataProcessor.getExcessGW2(),
       24,
       (o) => o.name,
       (o) => o.rank,
@@ -115,9 +113,6 @@ const commands = async (msg) => {
   }
 
   if (msg.content === '--excessDiscord') {
-    const discord = await getDiscordMembers(new DiscordRepository(msg));
-    const gw2 = await getGW2Members();
-    const excess = getExcessDiscord(gw2, discord);
     const options = {
       title: 'Excess Discord',
       color: '#00ff00',
@@ -126,7 +121,7 @@ const commands = async (msg) => {
 
     sendPagedEmbed(
       msg.channel,
-      excess,
+      dataProcessor.getExcessDiscord(),
       24,
       (o) => o.name,
       (o) => o.role || 'No Role',
@@ -135,12 +130,9 @@ const commands = async (msg) => {
   }
 
   if (msg.content === '--requiredActions') {
-    const discord = await getDiscordMembers(new DiscordRepository(msg));
-    const gw2 = await getGW2Members();
-
     const records = [];
 
-    const excessGW2 = getExcessGW2(gw2, discord);
+    const excessGW2 = dataProcessor.getExcessGW2();
     if (excessGW2.length) {
       records.push({
         key: 'Extra GW2',
@@ -148,9 +140,9 @@ const commands = async (msg) => {
       });
     }
 
-    const excessDiscord = getExcessDiscord(gw2, discord).filter(
-      (o) => o.role !== 'Bots' && o.role !== 'Guest'
-    );
+    const excessDiscord = dataProcessor
+      .getExcessDiscord()
+      .filter((o) => o.role !== 'Bots' && o.role !== 'Guest');
     if (excessDiscord.length) {
       records.push({
         key: 'Extra Discord',
@@ -158,7 +150,7 @@ const commands = async (msg) => {
       });
     }
 
-    const noRoles = getNoRoles(discord);
+    const noRoles = dataProcessor.getNoRoles();
     if (noRoles.length) {
       records.push({
         key: 'Has No Roles',
@@ -166,7 +158,7 @@ const commands = async (msg) => {
       });
     }
 
-    const multipleRoles = getMultipleRoles(discord);
+    const multipleRoles = dataProcessor.getMultipleRoles();
     if (multipleRoles.length) {
       records.push({
         key: 'Has Multiple Roles',
@@ -174,7 +166,7 @@ const commands = async (msg) => {
       });
     }
 
-    const mismatchedRoles = getMismatchedRoles(gw2, discord);
+    const mismatchedRoles = dataProcessor.getMismatchedRoles();
     if (mismatchedRoles.length) {
       records.push({
         key: 'Mismatched Roles (GW2/Discord)',
@@ -182,7 +174,7 @@ const commands = async (msg) => {
       });
     }
 
-    const needsPromotion = getNeedsPromotion(gw2);
+    const needsPromotion = dataProcessor.getNeedsPromotion();
     if (needsPromotion.length) {
       records.push({
         key: 'Needs Promotion',
