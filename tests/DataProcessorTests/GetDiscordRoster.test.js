@@ -77,6 +77,7 @@ test("getDiscordRoster filters non-valid roles, and sorts without roles", () => 
   const ourDiscordMembers = [
     ...mockDiscordMembers,
     new MockDiscordUser("Mock", ["TestRoles"], 1234567),
+    new MockDiscordUser("Mock2", ["TestRoles"], 1234566),
   ];
 
   const dataProcessor = new DataProcessor(
