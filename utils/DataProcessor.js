@@ -1,4 +1,4 @@
-const { User } = require("discord.js");
+const { User } = require('discord.js');
 
 class DataProcessor {
   /**
@@ -35,12 +35,11 @@ class DataProcessor {
    * @returns {Array<GW2Member>} excess GW2 accounts
    */
   getExcessGW2() {
-    return this._gw2Members.filter((gw2) => {
-      const testName = gw2.name.split(".")[0].toLowerCase();
-      return !this._discordMembers.some((m) =>
-        m.name.toLowerCase().includes(testName)
+    return this._gw2Members
+      .filter((m) => m.rank !== 'Alt')
+      .filter(
+        (m) => !this.findDiscordRecord(m.name.split('.')[0].toLowerCase())
       );
-    });
   }
 
   /**
@@ -57,9 +56,9 @@ class DataProcessor {
    */
   getNeedsPromotion = () => {
     return this._gw2Members.filter((gw2) => {
-      if (gw2.rank !== "Second Spear") return false;
+      if (gw2.rank !== 'Second Spear') return false;
 
-      const date = new Date(gw2.joined.split("T")[0]);
+      const date = new Date(gw2.joined.split('T')[0]);
       const diffMilliseconds = Math.abs(Date.now() - date);
       const diffDays = Math.floor(diffMilliseconds / (1000 * 60 * 60 * 24));
       return diffDays >= 14;
@@ -71,13 +70,12 @@ class DataProcessor {
    * @returns {Array<DiscordMember>} excess discord members
    */
   getExcessDiscord() {
-    return this._discordMembers.filter((discordMember) => {
-      return !this._gw2Members.some((m) =>
-        discordMember.name
-          .toLowerCase()
-          .includes(m.name.split(".")[0].toLowerCase())
-      );
-    });
+    return this._discordMembers.filter(
+      (discordMember) =>
+        !this._gw2Members.some((gw2Member) =>
+          this.matchDiscordName(gw2Member.name, discordMember.name)
+        )
+    );
   }
 
   /**
@@ -96,38 +94,24 @@ class DataProcessor {
    */
   findDiscordRecord = (testName) => {
     // check for exact match
-    let discordMember = this._discordMembers.find(
-      (m) => m.name.toLowerCase() === testName
+    const discordMember = this._discordMembers.find((m) =>
+      this.matchDiscordName(testName, m.name)
     );
 
-    // check for name before are after a space
-    if (!discordMember) {
-      discordMember = this._discordMembers.find((m) => {
-        const testAfter = new RegExp(`${testName}\\s`);
-        const testBefore = new RegExp(`\\s${testName}`);
-        return (
-          m.name.toLowerCase().match(testAfter) ||
-          m.name.toLowerCase().match(testBefore)
-        );
-      });
-    }
-
-    // check for name inside parenthesis
-    if (!discordMember) {
-      discordMember = this._discordMembers.find((m) => {
-        const test = new RegExp(`\\(${testName}\\)`);
-        return m.name.toLowerCase().match(test);
-      });
-    }
-
-    // check for any inclusion
-    if (!discordMember) {
-      discordMember = this._discordMembers.find((m) =>
-        m.name.toLowerCase().includes(testName)
-      );
-    }
-
     return discordMember;
+  };
+
+  /**
+   * Matches a testName to a discord name
+   * @param {string} testName gw2 test name
+   * @param {string} discordName discord name
+   * @returns
+   */
+  matchDiscordName = (testName, discordName) => {
+    testName = testName.split('.')[0].toLowerCase();
+    discordName = discordName.toLowerCase();
+
+    return discordName === testName || discordName.includes(`${testName}`);
   };
 
   /**
@@ -152,17 +136,16 @@ class DataProcessor {
    */
   getMismatchedRoles = () => {
     return this._gw2Members
+      .filter((gw2) => gw2.rank !== 'Alt')
       .filter((gw2) => {
-        const testName = gw2.name.split(".")[0].toLowerCase();
-        const discordMember = this.findDiscordRecord(testName);
+        const discordMember = this.findDiscordRecord(gw2.name);
         if (!discordMember) return false;
         if (discordMember.roles.length !== 1) return false;
 
         return discordMember.role !== gw2.rank;
       })
       .map((gw2) => {
-        const testName = gw2.name.split(".")[0].toLowerCase();
-        const discordMember = this.findDiscordRecord(testName);
+        const discordMember = this.findDiscordRecord(gw2.name);
         return `${gw2.name} (${gw2.rank}/${discordMember.role})`;
       });
   };
