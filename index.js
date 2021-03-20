@@ -70,7 +70,7 @@ const commands = async (msg) => {
 
     sendPagedEmbed(
       msg.channel,
-      dataProcessor.getSortedGW2(),
+      dataProcessor.getGW2Roster(),
       24,
       (o) => o.name,
       (o) => o.rank,
@@ -87,7 +87,7 @@ const commands = async (msg) => {
 
     sendPagedEmbed(
       msg.channel,
-      dataProcessor.getSortedDiscord(),
+      dataProcessor.getDiscordRoster(),
       24,
       (o) => o.name,
       (o) => o.role || 'No Role',
