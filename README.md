@@ -10,6 +10,10 @@ This is a bot for our personal server written using Discord.js.
 
 Run Server using nodemon
 
+### `yarn test`
+
+Run tests
+
 ## Environment Variables
 
 | Name         | Description                 |
