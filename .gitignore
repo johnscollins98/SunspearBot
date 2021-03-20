@@ -1,4 +1,10 @@
+# required but not commited
 .env
+
+# dev settings/helping
+coverage
 .vscode
+
+# yarn/npm related
 node_modules
 yarn-error.log
