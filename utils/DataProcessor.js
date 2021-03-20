@@ -173,8 +173,8 @@ class DataProcessor {
    * @returns positive if aRank > bRank, negative if aRank < bRank
    */
   _compareRank(aRank, bRank) {
-    const aVal = this._validRanks[aRank] || 0;
-    const bVal = this._validRanks[bRank] || 0;
+    const aVal = this._validRanks[aRank] || Object.keys(this._validRanks).length;
+    const bVal = this._validRanks[bRank] || Object.keys(this._validRanks).length;
 
     return aVal - bVal;
   }
