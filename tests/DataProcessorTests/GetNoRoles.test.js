@@ -6,7 +6,7 @@ const {
 } = require("../mocks/mockData");
 const MockDiscordUser = require("../mocks/MockDiscordUser");
 
-test("getNORoles runs without failing", () => {
+test("getNoRoles runs without failing", () => {
   const dataProcessor = new DataProcessor(
     mockGW2Members,
     mockDiscordMembers,
