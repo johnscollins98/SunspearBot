@@ -1,5 +1,5 @@
-const { DataProcessor } = require('../utils/DataProcessor');
-const { mockValidRanks, mockDiscordMembers, mockGW2Members } = require('./mocks/mockData');
+const { DataProcessor } = require('../../utils/DataProcessor');
+const { mockValidRanks, mockDiscordMembers, mockGW2Members } = require('../mocks/mockData');
 
 test('excessGW2 with same members', () => {
   const dataProcessor = new DataProcessor(
