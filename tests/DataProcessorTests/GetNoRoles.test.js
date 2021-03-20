@@ -23,7 +23,7 @@ test("getNoRoles with no candidates", () => {
     mockValidRanks
   );
 
-  expect(dataProcessor.getNoRoles()).toEqual([]);
+  expect(dataProcessor.getNoRoles()).toEqual([1]);
 });
 
 test("getNoRoles with a candidate", () => {
