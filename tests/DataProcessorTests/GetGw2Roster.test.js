@@ -12,6 +12,16 @@ test('getGW2Roster without failing', () => {
     mockValidRanks
   );
 
+  dataProcessor.getGW2Roster();
+});
+
+test('getGW2Roster returns roster', () => {
+  const dataProcessor = new DataProcessor(
+    mockGW2Members,
+    mockDiscordMembers,
+    mockValidRanks
+  );
+
   expect(dataProcessor.getGW2Roster()).toEqual(mockGW2Members);
 });
 
