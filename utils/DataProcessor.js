@@ -153,6 +153,62 @@ class DataProcessor {
       });
   };
 
+  getRequiredActions = () => {
+    const records = [];
+
+    const excessGW2 = this.getExcessGW2();
+    if (excessGW2.length) {
+      records.push({
+        key: 'Extra GW2',
+        value: excessGW2.map((o) => o.name),
+      });
+    }
+
+    const excessDiscord = this
+      .getExcessDiscord()
+      .filter((o) => o.role !== 'Bots' && o.role !== 'Guest');
+    if (excessDiscord.length) {
+      records.push({
+        key: 'Extra Discord',
+        value: excessDiscord.map((o) => `${o.name} (${o.role || 'No Role'})`),
+      });
+    }
+
+    const noRoles = this.getNoRoles();
+    if (noRoles.length) {
+      records.push({
+        key: 'Has No Roles',
+        value: noRoles.map((o) => o.name),
+      });
+    }
+
+    const multipleRoles = this.getMultipleRoles();
+    if (multipleRoles.length) {
+      records.push({
+        key: 'Has Multiple Roles',
+        value: multipleRoles.map((o) => `${o.name} (${o.roles.join(', ')})`),
+      });
+    }
+
+    const mismatchedRoles = this.getMismatchedRoles();
+    if (mismatchedRoles.length) {
+      records.push({
+        key: 'Mismatched Roles (GW2/Discord)',
+        value: mismatchedRoles,
+      });
+    }
+
+    const needsPromotion = this.getNeedsPromotion();
+    if (needsPromotion.length) {
+      records.push({
+        key: 'Needs Promotion',
+        value: needsPromotion.map((o) => o.name),
+      });
+    }
+
+    return records;
+  }
+
   // Helper methods - not supposed to be used outside of the class.
 
   /**

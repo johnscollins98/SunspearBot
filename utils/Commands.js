@@ -90,58 +90,6 @@ const { DataProcessor } = require('./DataProcessor');
   }
 
   if (msg.content === '--requiredActions') {
-    const records = [];
-
-    const excessGW2 = dataProcessor.getExcessGW2();
-    if (excessGW2.length) {
-      records.push({
-        key: 'Extra GW2',
-        value: excessGW2.map((o) => o.name),
-      });
-    }
-
-    const excessDiscord = dataProcessor
-      .getExcessDiscord()
-      .filter((o) => o.role !== 'Bots' && o.role !== 'Guest');
-    if (excessDiscord.length) {
-      records.push({
-        key: 'Extra Discord',
-        value: excessDiscord.map((o) => `${o.name} (${o.role || 'No Role'})`),
-      });
-    }
-
-    const noRoles = dataProcessor.getNoRoles();
-    if (noRoles.length) {
-      records.push({
-        key: 'Has No Roles',
-        value: noRoles.map((o) => o.name),
-      });
-    }
-
-    const multipleRoles = dataProcessor.getMultipleRoles();
-    if (multipleRoles.length) {
-      records.push({
-        key: 'Has Multiple Roles',
-        value: multipleRoles.map((o) => `${o.name} (${o.roles.join(', ')})`),
-      });
-    }
-
-    const mismatchedRoles = dataProcessor.getMismatchedRoles();
-    if (mismatchedRoles.length) {
-      records.push({
-        key: 'Mismatched Roles (GW2/Discord)',
-        value: mismatchedRoles,
-      });
-    }
-
-    const needsPromotion = dataProcessor.getNeedsPromotion();
-    if (needsPromotion.length) {
-      records.push({
-        key: 'Needs Promotion',
-        value: needsPromotion.map((o) => o.name),
-      });
-    }
-
     const options = {
       title: 'Required Actions',
       color: '#00ff00',
@@ -150,7 +98,7 @@ const { DataProcessor } = require('./DataProcessor');
 
     await sendPagedEmbed(
       msg.channel,
-      records,
+      dataProcessor.getRequiredActions(),
       9,
       (o) => o.key,
       (o) => o.value,
