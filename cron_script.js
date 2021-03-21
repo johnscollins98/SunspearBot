@@ -9,7 +9,7 @@ client.on('ready', async () => {
     const guild = client.guilds.resolve(process.env.DISCORD_GUILD_ID);
     if (!guild) throw "Can't find guild";
     
-    const channel = guild.channels.resolve(process.env.DISCORD_CHANNEL_ID);
+    const channel = guild.channels.resolve(process.env.NOTIFICATION_CHANNEL_ID);
     if (!channel) throw "Can't find channel";
 
     await commands({
