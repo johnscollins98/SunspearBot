@@ -1,4 +1,4 @@
-const { MessageEmbed, Client } = require('discord.js');
+const { MessageEmbed, Message, Client } = require('discord.js');
 const DiscordRepository = require('../repositories/DiscordRepository');
 const GW2Repository = require('../repositories/GW2Repository');
 const { DataProcessor } = require('./DataProcessor');
@@ -26,6 +26,30 @@ const commands = async (msg, client) => {
     color: '#00ff00',
     text: `<@${msg.author.id}>, HERE IS YOUR RES-PONSE`,
   };
+
+  if (msg.content.startsWith('^clean')) {
+    if (msg.guild.member(msg.author.id).hasPermission("MANAGE_MESSAGES")) {
+      const matches = msg.content.match(/^(\^clean) (\d+)$/);
+
+      if (!matches) {
+        return msg.reply("Usage: ^clean <number from 1-100>");
+      }
+
+      const numberGroup = 2;
+      const numberToDelete = parseInt(matches[numberGroup]);
+      
+      if (numberToDelete < 1 || numberToDelete > 100) {
+        return msg.reply("Usage: `^clean <number from 1-100>`");
+      }
+
+      const res = await msg.channel.bulkDelete(numberToDelete, true);
+      const reply = await msg.reply(`DE-LE-TED ${res.size} MESS-A-GES`);
+
+      setTimeout(() => reply.delete(), 5000);
+    } else {
+      return msg.reply("You do not have permission to do this.");
+    }
+  }
 
   if (msg.content === '^guildRoster') {
     await sendPagedEmbed(
