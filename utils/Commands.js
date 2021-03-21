@@ -21,7 +21,7 @@ const { DataProcessor } = require('./DataProcessor');
 
   const dataProcessor = new DataProcessor(gw2Members, discordMembers, ranks);
 
-  if (msg.content === '--guildRoster') {
+  if (msg.content === '^guildRoster') {
     const options = {
       title: 'GW2 Roster',
       color: '#00ff00',
@@ -38,7 +38,7 @@ const { DataProcessor } = require('./DataProcessor');
     );
   }
 
-  if (msg.content === '--discordRoster') {
+  if (msg.content === '^discordRoster') {
     const options = {
       title: 'Discord Roster',
       color: '#00ff00',
@@ -55,7 +55,7 @@ const { DataProcessor } = require('./DataProcessor');
     );
   }
 
-  if (msg.content === '--excessGW2') {
+  if (msg.content === '^excessGW2') {
     const options = {
       title: 'Excess GW2',
       color: '#00ff00',
@@ -72,7 +72,7 @@ const { DataProcessor } = require('./DataProcessor');
     );
   }
 
-  if (msg.content === '--excessDiscord') {
+  if (msg.content === '^excessDiscord') {
     const options = {
       title: 'Excess Discord',
       color: '#00ff00',
@@ -89,7 +89,7 @@ const { DataProcessor } = require('./DataProcessor');
     );
   }
 
-  if (msg.content === '--requiredActions') {
+  if (msg.content === '^requiredActions') {
     const options = {
       title: 'Required Actions',
       color: '#00ff00',

@@ -13,7 +13,7 @@ client.on('ready', async () => {
     if (!channel) throw "Can't find channel";
 
     await commands({
-      content: "--requiredActions",
+      content: "^requiredActions",
       author: { id: process.env.TO_TAG },
       channel,
       guild
