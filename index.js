@@ -12,7 +12,7 @@ client.on('message', async (msg) => {
   if (msg.author.id === client.user.id) return;
 
   funResponses(msg);
-  commands(msg);
+  commands(msg, client);
 });
 
 /**

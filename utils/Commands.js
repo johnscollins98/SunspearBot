@@ -1,4 +1,4 @@
-const { MessageEmbed } = require("discord.js");
+const { MessageEmbed, Client } = require('discord.js');
 const DiscordRepository = require('../repositories/DiscordRepository');
 const GW2Repository = require('../repositories/GW2Repository');
 const { DataProcessor } = require('./DataProcessor');
@@ -7,8 +7,9 @@ const { DataProcessor } = require('./DataProcessor');
  * Discord Commands!
  *
  * @param {Message} msg
+ * @param {Client} client
  */
- const commands = async (msg) => {
+const commands = async (msg, client) => {
   const gw2Repository = new GW2Repository(
     process.env.GW2_GUILD_ID,
     process.env.GW2_API_KEY
@@ -21,94 +22,75 @@ const { DataProcessor } = require('./DataProcessor');
 
   const dataProcessor = new DataProcessor(gw2Members, discordMembers, ranks);
 
-  if (msg.content === '^guildRoster') {
-    const options = {
-      title: 'GW2 Roster',
-      color: '#00ff00',
-      description: `<@${msg.author.id}>, HERE IS YOUR RESPONSE: `,
-    };
+  const options = {
+    color: '#00ff00',
+    text: `<@${msg.author.id}>, HERE IS YOUR RE-SPONSE`,
+  };
 
+  if (msg.content === '^guildRoster') {
     await sendPagedEmbed(
       msg.channel,
+      client,
       dataProcessor.getGW2Roster(),
       24,
       (o) => o.name,
       (o) => o.rank,
-      options
+      { ...options, title: 'GW2 Roster' }
     );
   }
 
   if (msg.content === '^discordRoster') {
-    const options = {
-      title: 'Discord Roster',
-      color: '#00ff00',
-      description: `<@${msg.author.id}>, HERE IS YOUR RESPONSE: `,
-    };
-
     await sendPagedEmbed(
       msg.channel,
+      client,
       dataProcessor.getDiscordRoster(),
       24,
       (o) => o.name,
       (o) => o.role || 'No Role',
-      options
+      { ...options, title: 'Discord Roster' }
     );
   }
 
   if (msg.content === '^excessGW2') {
-    const options = {
-      title: 'Excess GW2',
-      color: '#00ff00',
-      description: `<@${msg.author.id}>, HERE IS YOUR RESPONSE: `,
-    };
-
     await sendPagedEmbed(
       msg.channel,
+      client,
       dataProcessor.getExcessGW2(),
       24,
       (o) => o.name,
       (o) => o.rank,
-      options
+      { ...options, title: 'Excess GW2' }
     );
   }
 
   if (msg.content === '^excessDiscord') {
-    const options = {
-      title: 'Excess Discord',
-      color: '#00ff00',
-      description: `<@${msg.author.id}>, HERE IS YOUR RESPONSE: `,
-    };
-
     await sendPagedEmbed(
       msg.channel,
+      client,
       dataProcessor.getExcessDiscord(),
       24,
       (o) => o.name,
       (o) => o.role || 'No Role',
-      options
+      { ...options, title: 'Excess Discord' }
     );
   }
 
   if (msg.content === '^requiredActions') {
-    const options = {
-      title: 'Required Actions',
-      color: '#00ff00',
-      description: `<@${msg.author.id}>, HERE IS YOUR RESPONSE: `,
-    };
-
     await sendPagedEmbed(
       msg.channel,
+      client,
       dataProcessor.getRequiredActions(),
       9,
       (o) => o.key,
       (o) => o.value,
-      options
+      { ...options, title: 'Required Actions' }
     );
   }
 };
 
 const sendPagedEmbed = async (
   channel,
+  client,
   arr,
   pageLength,
   keyFunc,
@@ -116,7 +98,17 @@ const sendPagedEmbed = async (
   options = {}
 ) => {
   await channel
-    .send(generateEmbed(arr, 0, pageLength, keyFunc, valFunc, options))
+    .send(options.text, {
+      embed: generateEmbed(
+        client,
+        arr,
+        0,
+        pageLength,
+        keyFunc,
+        valFunc,
+        options
+      ),
+    })
     .then(async (message) => {
       if (arr.length <= pageLength) return;
       await message.react('➡');
@@ -149,16 +141,17 @@ const sendPagedEmbed = async (
               break;
           }
 
-          message.edit(
-            generateEmbed(
+          message.edit(options.text, {
+            embed: generateEmbed(
+              client,
               arr,
               currentIndex,
               pageLength,
               keyFunc,
               valFunc,
               options
-            )
-          );
+            ),
+          });
           if (currentIndex !== 0) {
             await message.react('⏮');
             await message.react('⬅');
@@ -173,6 +166,7 @@ const sendPagedEmbed = async (
 };
 
 const generateEmbed = (
+  client,
   arr,
   start,
   len,
@@ -187,6 +181,8 @@ const generateEmbed = (
   if (thumbnailUrl) embed.setThumbnail(thumbnailUrl);
   if (imageUrl) embed.setImage(imageUrl);
 
+  embed.setAuthor(client.user.username, (iconURL = client.user.avatarURL()));
+
   if (arr.length) {
     embed.setFooter(
       `Page ${start / len + 1}/${Math.ceil(
@@ -195,16 +191,15 @@ const generateEmbed = (
     );
 
     arr.slice(start, start + len).forEach((entry) => {
-      embed.addField(keyFunc(entry), valFunc(entry), inline=true);
+      embed.addField(keyFunc(entry), valFunc(entry), (inline = true));
     });
   } else {
-    embed.addField("👍 No Results!", "\u200b", inline=true);
+    embed.addField('👍 No Results!', '\u200b', (inline = true));
   }
 
   return embed;
 };
 
-
 module.exports = {
-  commands
-}
+  commands,
+};
