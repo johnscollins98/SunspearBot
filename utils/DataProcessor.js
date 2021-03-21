@@ -109,9 +109,12 @@ class DataProcessor {
    */
   matchDiscordName = (testName, discordName) => {
     testName = testName.split('.')[0].toLowerCase();
-    discordName = discordName.toLowerCase();
+    discordName = discordName
+      .toLowerCase()
+      .replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '') // strip any emojis
+      .trim(); // trim any leading/trailing whitespace (should only be present if they have an emoji at the start)
 
-    return discordName === testName || discordName.includes(`${testName}`);
+    return discordName === testName || discordName.includes(`(${testName})`);
   };
 
   /**
@@ -173,8 +176,10 @@ class DataProcessor {
    * @returns positive if aRank > bRank, negative if aRank < bRank
    */
   _compareRank(aRank, bRank) {
-    const aVal = this._validRanks[aRank] || Object.keys(this._validRanks).length;
-    const bVal = this._validRanks[bRank] || Object.keys(this._validRanks).length;
+    const aVal =
+      this._validRanks[aRank] || Object.keys(this._validRanks).length;
+    const bVal =
+      this._validRanks[bRank] || Object.keys(this._validRanks).length;
 
     return aVal - bVal;
   }
