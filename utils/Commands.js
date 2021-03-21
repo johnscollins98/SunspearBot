@@ -42,10 +42,15 @@ const commands = async (msg, client) => {
         return msg.reply("Usage: `^clean <number from 1-100>`");
       }
 
-      const res = await msg.channel.bulkDelete(numberToDelete, true);
-      const reply = await msg.reply(`DE-LE-TED ${res.size} MESS-A-GES`);
+      const channel = msg.channel;
+      const author = msg.author;
 
-      setTimeout(() => reply.delete(), 5000);
+      await msg.delete();
+
+      const res = await channel.bulkDelete(numberToDelete, true);
+      const reply = await channel.send(`<@${author.id}>, DE-LE-TED ${res.size} MESS-A-GES`)
+
+      setTimeout(() => reply.delete(), 2000);
     } else {
       return msg.reply("You do not have permission to do this.");
     }
