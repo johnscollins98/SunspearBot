@@ -24,7 +24,7 @@ const commands = async (msg, client) => {
 
   const options = {
     color: '#00ff00',
-    text: `<@${msg.author.id}>, HERE IS YOUR RE-SPONSE`,
+    text: `<@${msg.author.id}>, HERE IS YOUR RES-PONSE`,
   };
 
   if (msg.content === '^guildRoster') {

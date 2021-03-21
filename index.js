@@ -22,11 +22,11 @@ client.on('message', async (msg) => {
  */
 const funResponses = (msg) => {
   if (msg.content.match(/[o|0]+h*[,|.|\s]*my*f*[,|.|\s]*g(?:[o|0]*d)?/gim)) {
-    msg.reply('TRAMPOLINE.');
+    msg.reply('TRAM-PO-LINE.');
   }
 
   if (msg.content.match(/trampoline/gim)) {
-    msg.reply('OMG');
+    msg.reply('O-M-G');
   }
 
   if (msg.content === 'Ping!') {
@@ -34,7 +34,7 @@ const funResponses = (msg) => {
   }
 
   if (msg.content.match(/x\s*d/gim)) {
-    msg.reply('HI. I THINK YOU MEAN "xB"');
+    msg.reply('HE-LLO I THINK YOU MEAN "xB"');
   }
 
   if (msg.content.match(/x\s*b/gim)) {
