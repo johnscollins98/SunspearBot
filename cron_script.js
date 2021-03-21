@@ -17,7 +17,7 @@ client.on('ready', async () => {
       author: { id: process.env.TO_TAG },
       channel,
       guild
-    })
+    }, client)
   } catch (err) {
     console.error(err);
   } finally {
