@@ -17,7 +17,7 @@ const commands = async (msg, client) => {
 
   let content = msg.content;
   const matches = content.match(
-    new RegExp(`(\\${prefix}|<@\\!${client.user.id}>\s?)(\.*)`)
+    new RegExp(`(\\${prefix}|<@\\!?${client.user.id}>\s?)(\.*)`)
   );
   if (matches) {
     content = matches[2].trim();
@@ -42,7 +42,7 @@ const commands = async (msg, client) => {
     text: `<@${msg.author.id}>, HERE IS YOUR RES-PONSE`,
   };
 
-  if (msg.content.trim() === `<@!${client.user.id}>`) {
+  if (msg.content.trim().match(new RegExp(`^<@\\!?${client.user.id}>$`))) {
     return msg.reply(`The prefix for this guild is: \`${prefix}\``);
   }
 
