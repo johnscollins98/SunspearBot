@@ -16,8 +16,11 @@ const commands = async (msg, client) => {
   const prefix = (await configRepository.getPrefix()) || '^';
 
   let content = msg.content;
-  if (content.startsWith(prefix)) {
-    content = content.substr(1, content.length - 1);
+  const matches = content.match(
+    new RegExp(`(\\${prefix}|<@\\!${client.user.id}>\s?)(\.*)`)
+  );
+  if (matches) {
+    content = matches[2].trim();
   } else {
     return;
   }
@@ -39,14 +42,18 @@ const commands = async (msg, client) => {
     text: `<@${msg.author.id}>, HERE IS YOUR RES-PONSE`,
   };
 
+  if (msg.content.trim() === `<@!${client.user.id}>`) {
+    return msg.reply(`The prefix for this guild is: \`${prefix}\``);
+  }
+
   if (content.startsWith('prefix')) {
     if (msg.guild.member(msg.author.id).hasPermission('MANAGE_MESSAGES')) {
       const matches = content.match(
         new RegExp(`^(prefix) ([\\!\\$\\-\\^\\_\\+\\=]+)$`)
       );
-      
+
       if (!matches) {
-        return msg.reply(`Usage: \`${prefix}prefix <!-$%^&*_+=?>\``);
+        return msg.reply(`The prefix for this guild is: \`${prefix}\``);
       }
 
       const prefixIdx = 2;
@@ -57,9 +64,7 @@ const commands = async (msg, client) => {
 
   if (content.startsWith('clean')) {
     if (msg.guild.member(msg.author.id).hasPermission('MANAGE_MESSAGES')) {
-      const matches = content.match(
-        new RegExp(`^(clean) (\\d+)$`)
-      );
+      const matches = content.match(new RegExp(`^(clean) (\\d+)$`));
 
       if (!matches) {
         return msg.reply(`Usage: \`${prefix}clean <number from 1-100>\``);

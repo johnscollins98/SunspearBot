@@ -1,12 +1,12 @@
 require('dotenv').config();
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const { Client, Message } = require('discord.js');
 
 const { commands } = require('./utils/Commands');
 const client = new Client();
 
-const GuildConfig = require("./models/GuildConfig.model");
+const GuildConfig = require('./models/GuildConfig.model');
 
 // DB connection
 const dbUri = process.env.ATLAS_URI;
@@ -16,12 +16,19 @@ mongoose.connect(dbUri, {
   useUnifiedTopology: true,
 });
 const connection = mongoose.connection;
-connection.once("open", async () => {
-  console.log("MongoDB database connection established successfully.");
-})
+connection.once('open', async () => {
+  console.log('MongoDB database connection established successfully.');
+});
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
+  client.user.setPresence({
+    status: 'online',
+    activity: {
+      name: 'MEN-TION ME FOR PRE-FIX.',
+      type: 'PLAYING',
+    },
+  });
 });
 
 client.on('guildMemberAdd', (member) => {
