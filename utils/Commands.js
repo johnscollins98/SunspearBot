@@ -46,6 +46,33 @@ const commands = async (msg, client) => {
     return msg.reply(`The prefix for this guild is: \`${prefix}\``);
   }
 
+  if (content.startsWith('adminRole')) {
+    if (msg.guild.member(msg.author.id).hasPermission('ADMINISTRATOR')) {
+      const matches = content.match(/^(adminRole)\s?(\d+)?$/);
+      if (!matches) return msg.reply(`Usage: \`${prefix}adminRole <role_id>\``);
+
+      const roleId = matches[2];
+      if (!roleId) {
+        // return current admin
+        const currentId = await configRepository.getAdminRole();
+        if (!currentId) return msg.reply('No current admin role.');
+
+        const found = msg.guild.roles.resolve(currentId);
+        if (!found) return msg.reply(`Admin role is currently invalid (cannot be found) - ${currentId}`);
+
+        return msg.reply(`Admin role is: ${found.name}`);
+      }
+
+      const found = msg.guild.roles.resolve(roleId);
+      if (!found) return msg.reply(`Cannot find role with id ${roleId}`);
+
+      await configRepository.setAdminRole(roleId);
+      return msg.reply(`Set admin role to ${found.name}`);
+    } else {
+      return msg.reply('Only a guild Administrator can set the admin role.')
+    }
+  }
+
   if (content.startsWith('prefix')) {
     if (msg.guild.member(msg.author.id).hasPermission('MANAGE_MESSAGES')) {
       const matches = content.match(

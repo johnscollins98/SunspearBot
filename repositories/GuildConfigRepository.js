@@ -26,6 +26,23 @@ class GuildConfigRepository {
     return null;
   }
 
+  async getAdminRole() {
+    const config = await this._findOrCreateConfig();
+    if (config) {
+      return config.adminRole;
+    }
+    return null;
+  }
+
+  async setAdminRole(roleId) {
+    const config = await this._findOrCreateConfig();
+    if (config) {
+      config.adminRole = roleId;
+      return await config.save();
+    }
+    return null;
+  }
+
   async _findOrCreateConfig() {
     const config = await GuildConfig.findOne({ id: this.id }).exec();
     if (config) {
