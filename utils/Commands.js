@@ -37,6 +37,14 @@ const commands = async (msg, client) => {
 
   const dataProcessor = new DataProcessor(gw2Members, discordMembers, ranks);
 
+  const authHelper = async () => {
+    const adminRole = await configRepository.getAdminRole();
+    if (!adminRole) return true; // no admin role, so everyone is authorized.
+
+    const val = msg.guild.member(msg.author.id).roles.cache.array().find(o => o.id === adminRole);
+    return val;
+  }
+
   const options = {
     color: '#00ff00',
     text: `<@${msg.author.id}>, HERE IS YOUR RES-PONSE`,
@@ -74,7 +82,7 @@ const commands = async (msg, client) => {
   }
 
   if (content.startsWith('prefix')) {
-    if (msg.guild.member(msg.author.id).hasPermission('MANAGE_MESSAGES')) {
+    if (await authHelper()) {
       const matches = content.match(
         new RegExp(`^(prefix) ([\\!\\$\\-\\^\\_\\+\\=]+)$`)
       );
@@ -90,7 +98,7 @@ const commands = async (msg, client) => {
   }
 
   if (content.startsWith('clean')) {
-    if (msg.guild.member(msg.author.id).hasPermission('MANAGE_MESSAGES')) {
+    if (await authHelper()) {
       const matches = content.match(new RegExp(`^(clean) (\\d+)$`));
 
       if (!matches) {
