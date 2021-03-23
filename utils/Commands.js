@@ -50,7 +50,8 @@ const commands = async (msg, client) => {
       }
 
       const prefixIdx = 2;
-      configRepository.setPrefix(matches[prefixIdx])
+      const newObj = await configRepository.setPrefix(matches[prefixIdx]);
+      msg.reply(`UP-DA-TED PRE-FIX TO '${newObj.prefix}'`);
     }
   }
 

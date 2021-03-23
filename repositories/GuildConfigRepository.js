@@ -21,13 +21,13 @@ class GuildConfigRepository {
     const config = await this.getConfig();
     if (config) {
       config.prefix = prefix;
-      config.save();
+      return await config.save();
     } else {
       const newConfig = new GuildConfig({
         id: this.id,
         prefix,
       });
-      await newConfig.save();
+      return await newConfig.save();
     }
   }
 }
