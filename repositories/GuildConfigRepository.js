@@ -6,11 +6,11 @@ class GuildConfigRepository {
   }
   
   async getConfig() {
-    return await GuildConfig.findOne({ id: this.id }).exec();
+    return await this._findOrCreateConfig();
   }
 
   async getPrefix() {
-    const config = await this.getConfig();
+    const config = await this._findOrCreateConfig();
     if (config) {
       return config.prefix;
     }
@@ -18,15 +18,20 @@ class GuildConfigRepository {
   }
 
   async setPrefix(prefix) {
-    const config = await this.getConfig();
+    const config = await this._findOrCreateConfig()
     if (config) {
       config.prefix = prefix;
       return await config.save();
+    } 
+    return null;
+  }
+
+  async _findOrCreateConfig() {
+    const config = await GuildConfig.findOne({ id: this.id }).exec();
+    if (config) {
+      return config;
     } else {
-      const newConfig = new GuildConfig({
-        id: this.id,
-        prefix,
-      });
+      const newConfig = new GuildConfig({ id: this.id });
       return await newConfig.save();
     }
   }
