@@ -1,8 +1,24 @@
 require('dotenv').config();
+const mongoose = require("mongoose");
+
 const { Client, Message } = require('discord.js');
 
 const { commands } = require('./utils/Commands');
 const client = new Client();
+
+const GuildConfig = require("./models/GuildConfig.model");
+
+// DB connection
+const dbUri = process.env.ATLAS_URI;
+mongoose.connect(dbUri, {
+  useNewUrlParser: true,
+  useCreateIndex: true,
+  useUnifiedTopology: true,
+});
+const connection = mongoose.connection;
+connection.once("open", async () => {
+  console.log("MongoDB database connection established successfully.");
+})
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);

@@ -1,5 +1,7 @@
 const { MessageEmbed, Message, Client } = require('discord.js');
+const GuildConfig = require('../models/GuildConfig.model');
 const DiscordRepository = require('../repositories/DiscordRepository');
+const GuildConfigRepository = require('../repositories/GuildConfigRepository');
 const GW2Repository = require('../repositories/GW2Repository');
 const { DataProcessor } = require('./DataProcessor');
 
@@ -10,6 +12,16 @@ const { DataProcessor } = require('./DataProcessor');
  * @param {Client} client
  */
 const commands = async (msg, client) => {
+  const configRepository = new GuildConfigRepository(msg.guild.id);
+  const prefix = (await configRepository.getPrefix()) || '^';
+
+  let content = msg.content;
+  if (content.startsWith(prefix)) {
+    content = content.substr(1, content.length - 1);
+  } else {
+    return;
+  }
+
   const gw2Repository = new GW2Repository(
     process.env.GW2_GUILD_ID,
     process.env.GW2_API_KEY
@@ -27,19 +39,36 @@ const commands = async (msg, client) => {
     text: `<@${msg.author.id}>, HERE IS YOUR RES-PONSE`,
   };
 
-  if (msg.content.startsWith('^clean')) {
-    if (msg.guild.member(msg.author.id).hasPermission("MANAGE_MESSAGES")) {
-      const matches = msg.content.match(/^(\^clean) (\d+)$/);
+  if (content.startsWith('prefix')) {
+    if (msg.guild.member(msg.author.id).hasPermission('MANAGE_MESSAGES')) {
+      const matches = content.match(
+        new RegExp(`^(prefix) ([\\!\\$\\-\\^\\_\\+\\=]+)$`)
+      );
+      
+      if (!matches) {
+        return msg.reply(`Usage: \`${prefix}prefix <!-$%^&*_+=?>\``);
+      }
+
+      const prefixIdx = 2;
+      configRepository.setPrefix(matches[prefixIdx])
+    }
+  }
+
+  if (content.startsWith('clean')) {
+    if (msg.guild.member(msg.author.id).hasPermission('MANAGE_MESSAGES')) {
+      const matches = content.match(
+        new RegExp(`^(clean) (\\d+)$`)
+      );
 
       if (!matches) {
-        return msg.reply("Usage: ^clean <number from 1-100>");
+        return msg.reply(`Usage: \`${prefix}clean <number from 1-100>\``);
       }
 
       const numberGroup = 2;
       const numberToDelete = parseInt(matches[numberGroup]);
-      
+
       if (numberToDelete < 1 || numberToDelete > 100) {
-        return msg.reply("Usage: `^clean <number from 1-100>`");
+        return msg.reply(`Usage: \`${prefix}clean <number from 1-100>\``);
       }
 
       const channel = msg.channel;
@@ -48,15 +77,17 @@ const commands = async (msg, client) => {
       await msg.delete();
 
       const res = await channel.bulkDelete(numberToDelete, true);
-      const reply = await channel.send(`<@${author.id}>, DE-LE-TED ${res.size} MESS-A-GES`)
+      const reply = await channel.send(
+        `<@${author.id}>, DE-LE-TED ${res.size} MESS-A-GES`
+      );
 
       setTimeout(() => reply.delete(), 2000);
     } else {
-      return msg.reply("You do not have permission to do this.");
+      return msg.reply('You do not have permission to do this.');
     }
   }
 
-  if (msg.content === '^guildRoster') {
+  if (content === 'guildRoster') {
     await sendPagedEmbed(
       msg.channel,
       client,
@@ -68,7 +99,7 @@ const commands = async (msg, client) => {
     );
   }
 
-  if (msg.content === '^discordRoster') {
+  if (content === 'discordRoster') {
     await sendPagedEmbed(
       msg.channel,
       client,
@@ -80,7 +111,7 @@ const commands = async (msg, client) => {
     );
   }
 
-  if (msg.content === '^excessGW2') {
+  if (content === 'excessGW2') {
     await sendPagedEmbed(
       msg.channel,
       client,
@@ -92,7 +123,7 @@ const commands = async (msg, client) => {
     );
   }
 
-  if (msg.content === '^excessDiscord') {
+  if (content === 'excessDiscord') {
     await sendPagedEmbed(
       msg.channel,
       client,
@@ -104,7 +135,7 @@ const commands = async (msg, client) => {
     );
   }
 
-  if (msg.content === '^requiredActions') {
+  if (content === 'requiredActions') {
     await sendPagedEmbed(
       msg.channel,
       client,
