@@ -1,4 +1,4 @@
-const { DataProcessor, DiscordMember } = require('../../utils/DataProcessor');
+const { DataProcessor } = require('../../utils/DataProcessor');
 const {
   mockValidRanks,
   mockDiscordMembers,
@@ -95,6 +95,24 @@ test('find needs promotion', () => {
     mockValidRanks
   );
   expect(dataProcessor.getRequiredActions()).toEqual([
-    { key: 'Needs Promotion', value: ['NeedsPromoted.5432'] }
-  ])
-})
+    { key: 'Needs Promotion', value: ['NeedsPromoted.5432'] },
+  ]);
+});
+
+test('find mismatched role', () => {
+  const ourGw2 = [
+    ...this.mockGW2Members,
+    { ...this.mockGW2Members[0], rank: 'General' },
+  ];
+  const dataProcessor = new DataProcessor(
+    ourGw2,
+    this.mockDiscordMembers,
+    mockValidRanks
+  );
+  expect(dataProcessor.getRequiredActions()).toEqual([
+    {
+      key: 'Mismatched Roles (GW2/Discord)',
+      value: ['<@123> (General/Spearmarshal)'],
+    },
+  ]);
+});
