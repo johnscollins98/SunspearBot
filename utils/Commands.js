@@ -1,6 +1,4 @@
 const { MessageEmbed, Message, Client } = require('discord.js');
-const GuildConfig = require('../models/GuildConfig.model');
-const DiscordRepository = require('../repositories/DiscordRepository');
 const GuildConfigRepository = require('../repositories/GuildConfigRepository');
 const GW2Repository = require('../repositories/GW2Repository');
 const { DataProcessor } = require('./DataProcessor');
@@ -32,10 +30,10 @@ const commands = async (msg, client) => {
   const gw2Members = await gw2Repository.getMembers();
   const ranks = await gw2Repository.getRanks();
 
-  const discordRepository = new DiscordRepository(msg);
-  const discordMembers = await discordRepository.getMembers();
+  const discordMembers = await msg.guild.members.fetch();
+  const membersArray = discordMembers.array();
 
-  const dataProcessor = new DataProcessor(gw2Members, discordMembers, ranks);
+  const dataProcessor = new DataProcessor(gw2Members, membersArray, ranks);
 
   const authHelper = async () => {
     const adminRole = await configRepository.getAdminRole();
