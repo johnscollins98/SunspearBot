@@ -24,7 +24,7 @@ test('runs without failing', () => {
 });
 
 test('finds excessDiscord', () => {
-  const extra = new MockDiscordUser('Mock', ['General'], 123456);
+  const extra = new MockDiscordUser('Mock', 123, ['General'], 123456);
   const dataProcessor = new DataProcessor(
     this.mockGW2Members,
     [...this.mockDiscordMembers, extra],
@@ -32,7 +32,7 @@ test('finds excessDiscord', () => {
   );
 
   expect(dataProcessor.getRequiredActions()).toEqual([
-    { key: 'Extra Discord', value: ['Mock (General)'] },
+    { key: 'Extra Discord', value: ['<@123> (General)'] },
   ]);
 });
 
@@ -54,7 +54,7 @@ test('finds excessGW2', () => {
 });
 
 test('finds no roles', () => {
-  const candidate = new MockDiscordUser('Test', [], 1234567);
+  const candidate = new MockDiscordUser('Test', 123, [], 1234567);
   const copyDiscord = [...this.mockDiscordMembers];
   copyDiscord[0] = candidate;
   const dataProcessor = new DataProcessor(
@@ -64,13 +64,14 @@ test('finds no roles', () => {
   );
 
   expect(dataProcessor.getRequiredActions()).toEqual([
-    { key: 'Has No Roles', value: ['Test'] },
+    { key: 'Has No Roles', value: ['<@123>'] },
   ]);
 });
 
 test('find multiple roles', () => {
   const candidate = new MockDiscordUser(
     'Test',
+    123,
     ['Spearmarshal', 'General'],
     12345767
   );
@@ -83,7 +84,7 @@ test('find multiple roles', () => {
   );
 
   expect(dataProcessor.getRequiredActions()).toEqual([
-    { key: 'Has Multiple Roles', value: ['Test (Spearmarshal, General)'] },
+    { key: 'Has Multiple Roles', value: ['<@123> (Spearmarshal, General)'] },
   ]);
 });
 

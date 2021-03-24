@@ -33,6 +33,7 @@ test('excessDiscord with one missing gw2', () => {
   const expected = {
     name: expectedObj.displayName,
     joined: expectedObj.joinedTimestamp,
+    id: expectedObj.id,
     roles,
     role: roles[0]
   }

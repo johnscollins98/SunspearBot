@@ -30,6 +30,7 @@ test("getDiscordRoster returns proper roster", () => {
     return {
       name: m.displayName,
       joined: m.joinedTimestamp,
+      id: m.id,
       roles,
       role,
     };
@@ -65,6 +66,7 @@ test("getDiscordRoster sorts properly", () => {
     return {
       name: m.displayName,
       joined: m.joinedTimestamp,
+      id: m.id,
       roles,
       role,
     };
@@ -76,8 +78,8 @@ test("getDiscordRoster sorts properly", () => {
 test("getDiscordRoster filters non-valid roles, and sorts without roles", () => {
   const ourDiscordMembers = [
     ...mockDiscordMembers,
-    new MockDiscordUser("Mock", ["TestRoles"], 1234567),
-    new MockDiscordUser("Mock2", ["TestRoles"], 1234566),
+    new MockDiscordUser("Mock", 789, ["TestRoles"], 1234567),
+    new MockDiscordUser("Mock2", 876, ["TestRoles"], 1234566),
   ];
 
   const dataProcessor = new DataProcessor(
@@ -90,6 +92,7 @@ test("getDiscordRoster filters non-valid roles, and sorts without roles", () => 
 
   expect(res[res.length - 1]).toEqual({
     name: "Mock",
+    id: 789,
     roles: [],
     role: undefined,
     joined: 1234567,

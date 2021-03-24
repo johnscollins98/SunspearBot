@@ -25,7 +25,7 @@ class DataProcessor {
           .map((r) => r.name);
         const role = roles[0];
 
-        return new DiscordMember(m.displayName, role, roles, m.joinedTimestamp);
+        return new DiscordMember(m.displayName, m.id, role, roles, m.joinedTimestamp);
       })
     );
   }
@@ -149,7 +149,7 @@ class DataProcessor {
       })
       .map((gw2) => {
         const discordMember = this.findDiscordRecord(gw2.name);
-        return `${gw2.name} (${gw2.rank}/${discordMember.role})`;
+        return `<@${discordMember.id}> (${gw2.rank}/${discordMember.role})`;
       });
   };
 
@@ -170,7 +170,7 @@ class DataProcessor {
     if (excessDiscord.length) {
       records.push({
         key: 'Extra Discord',
-        value: excessDiscord.map((o) => `${o.name} (${o.role || 'No Role'})`),
+        value: excessDiscord.map((o) => `<@${o.id}> (${o.role || 'No Role'})`),
       });
     }
 
@@ -178,7 +178,7 @@ class DataProcessor {
     if (noRoles.length) {
       records.push({
         key: 'Has No Roles',
-        value: noRoles.map((o) => o.name),
+        value: noRoles.map((o) => `<@${o.id}>`),
       });
     }
 
@@ -186,7 +186,7 @@ class DataProcessor {
     if (multipleRoles.length) {
       records.push({
         key: 'Has Multiple Roles',
-        value: multipleRoles.map((o) => `${o.name} (${o.roles.join(', ')})`),
+        value: multipleRoles.map((o) => `<@${o.id}> (${o.roles.join(', ')})`),
       });
     }
 
@@ -293,8 +293,9 @@ class DiscordMember {
    * @param {Array<string>} roles
    * @param {number} joined
    */
-  constructor(name, role, roles, joined) {
+  constructor(name, id, role, roles, joined) {
     this.name = name;
+    this.id = id;
     this.role = role;
     this.roles = roles;
     this.joined = joined;

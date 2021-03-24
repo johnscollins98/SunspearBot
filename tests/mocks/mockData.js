@@ -26,12 +26,12 @@ const mockGW2Members = [
 ];
 
 const mockDiscordMembers = [
-  new MockDiscordUser('Test', ['Spearmarshal'], 1616253509),
-  new MockDiscordUser('Other', ['General'], 1616253509),
-  new MockDiscordUser('Captain', ['Captain'], 1616253509),
-  new MockDiscordUser('FirstSpear', ['First Spear'], 1616253509),
-  new MockDiscordUser('NeedsPromoted', ['Second Spear'], 1616253509),
-  new MockDiscordUser('SecondSpear', ['Second Spear'], 1616253509),
+  new MockDiscordUser('Test', 123, ['Spearmarshal'], 1616253509),
+  new MockDiscordUser('Other', 234, ['General'], 1616253509),
+  new MockDiscordUser('Captain', 456, ['Captain'], 1616253509),
+  new MockDiscordUser('FirstSpear', 567, ['First Spear'], 1616253509),
+  new MockDiscordUser('NeedsPromoted', 678, ['Second Spear'], 1616253509),
+  new MockDiscordUser('SecondSpear', 789, ['Second Spear'], 1616253509),
 ];
 
 const mockValidRanks = [

@@ -29,6 +29,7 @@ test("getNoRoles with no candidates", () => {
 test("getNoRoles with a candidate", () => {
   const candidate = new MockDiscordUser(
     "Mock",
+    123,
     [],
     12345678
   );
@@ -44,6 +45,7 @@ test("getNoRoles with a candidate", () => {
     {
       name: candidate.displayName,
       joined: candidate.joinedTimestamp,
+      id: candidate.id,
       roles: candidate.roles.cache.array().map((o) => o.name),
       role: candidate.roles.cache.array().map((o) => o.name)[0],
     },

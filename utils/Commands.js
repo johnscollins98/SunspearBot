@@ -153,25 +153,40 @@ const commands = async (msg, client) => {
   }
 
   if (content === 'excessGW2') {
+    const excessGW2 = dataProcessor.getExcessGW2();
+    const data = {};
+    excessGW2.forEach(m => {
+      const rank = m.rank
+      if (!data[rank]) data[rank] = [];
+      data[rank].push(m.name);
+    });
     await sendPagedEmbed(
       msg.channel,
       client,
-      dataProcessor.getExcessGW2(),
+      Object.entries(data),
       24,
-      (o) => o.name,
-      (o) => o.rank,
+      (o) => o[0],
+      (o) => o[1],
       { ...options, title: 'Excess GW2' }
     );
   }
 
   if (content === 'excessDiscord') {
+    const excessDiscord = dataProcessor.getExcessDiscord();
+    const data = {};
+    excessDiscord.forEach(m => {
+      const role = m.role || "No Role";
+      if (!data[role]) data[role] = [];
+      data[role].push(`<@${m.id}>`);
+    })
+
     await sendPagedEmbed(
       msg.channel,
       client,
-      dataProcessor.getExcessDiscord(),
+      Object.entries(data),
       24,
-      (o) => o.name,
-      (o) => o.role || 'No Role',
+      (o) => o[0],
+      (o) => o[1],
       { ...options, title: 'Excess Discord' }
     );
   }

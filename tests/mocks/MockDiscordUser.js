@@ -1,6 +1,7 @@
 class MockDiscordUser {
-  constructor(name, roles, joinedTimestamp) {
+  constructor(name, id, roles, joinedTimestamp) {
     this.displayName = name;
+    this.id = id;
     this.roles = {
       cache: {
         array: () =>
