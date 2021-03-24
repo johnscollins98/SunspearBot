@@ -37,5 +37,6 @@ client.on('ready', async () => {
     console.error(err);
   } finally {
     client.destroy();
+    connection.close();
   }
 });
