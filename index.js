@@ -18,6 +18,7 @@ mongoose.connect(dbUri, {
 const connection = mongoose.connection;
 connection.once('open', async () => {
   console.log('MongoDB database connection established successfully.');
+  client.login(process.env.BOT_TOKEN);
 });
 
 client.on('ready', () => {
@@ -88,5 +89,3 @@ const funResponses = (msg) => {
     msg.reply('xB');
   }
 };
-
-client.login(process.env.BOT_TOKEN);
