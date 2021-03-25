@@ -1,4 +1,4 @@
-const { DataProcessor } = require('../../utils/DataProcessor');
+const { DataProcessor } = require('../../src/utils/DataProcessor');
 const {
   mockValidRanks,
   mockDiscordMembers,

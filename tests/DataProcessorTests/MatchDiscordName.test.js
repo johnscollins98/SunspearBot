@@ -1,4 +1,4 @@
-const { DataProcessor } = require('../../utils/DataProcessor');
+const { DataProcessor } = require('../../src/utils/DataProcessor');
 const {
   mockValidRanks,
   mockDiscordMembers,
@@ -47,7 +47,7 @@ test('match with white space in name', () => {
   expect(
     this.dataProcessor.matchDiscordName('two words.1234', ' two words ')
   ).toBeTruthy();
-})
+});
 
 test('match if discord name matches, but with any emojis', () => {
   expect(

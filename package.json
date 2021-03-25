@@ -4,7 +4,9 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "yarn nodemon .",
+    "start": "node ./src/index.js",
+    "dev": "yarn nodemon ./src/index.js",
+    "cron": "node ./src/cron_script.js",
     "test": "jest"
   },
   "dependencies": {

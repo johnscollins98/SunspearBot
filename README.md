@@ -8,11 +8,20 @@ This is a bot for our personal server written using Discord.js.
 
 ### `yarn start`
 
-Run Server using nodemon
+Run Server using node
+
+### `yarn dev`
+
+Run server using nodemon
+
+### `yarn cron`
+
+Run cron_script
 
 ### `yarn test`
 
 Run tests
+
 
 ## Environment Variables
 

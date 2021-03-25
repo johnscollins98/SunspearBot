@@ -1,4 +1,4 @@
-const { DataProcessor } = require('../../utils/DataProcessor');
+const { DataProcessor } = require('../../src/utils/DataProcessor');
 const {
   mockValidRanks,
   mockDiscordMembers,
@@ -20,18 +20,20 @@ test('GetNeedsPromotion gets correct object', () => {
     mockDiscordMembers,
     mockValidRanks
   );
-  expect(dataProcessor.getNeedsPromotion()[0].name).toEqual("NeedsPromoted.5432");
+  expect(dataProcessor.getNeedsPromotion()[0].name).toEqual(
+    'NeedsPromoted.5432'
+  );
 });
 
 test('GetNeedsPromotion with no candidates', () => {
-  const idx = mockGW2Members.findIndex(o => o.name === "NeedsPromoted.5432");
+  const idx = mockGW2Members.findIndex((o) => o.name === 'NeedsPromoted.5432');
   const ourGw2Members = [...mockGW2Members];
   ourGw2Members.splice(idx);
-  
+
   const dataProcessor = new DataProcessor(
     ourGw2Members,
     mockDiscordMembers,
     mockValidRanks
-  )
+  );
   expect(dataProcessor.getNeedsPromotion()).toEqual([]);
-})
+});

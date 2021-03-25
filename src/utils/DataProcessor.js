@@ -146,6 +146,11 @@ class DataProcessor {
       });
   };
 
+  /**
+   * Gets all required actions for the server.
+   * 
+   * @returns {Array<{key: string, value: Array<string>}}
+   */
   getRequiredActions = () => {
     const records = [];
 
@@ -282,6 +287,7 @@ class DataProcessor {
   }
 
   /**
+   * Get the roles of a Discord Member.
    *
    * @param {GuildMember} discordMember
    * @returns {Array<string>} Discord Roles

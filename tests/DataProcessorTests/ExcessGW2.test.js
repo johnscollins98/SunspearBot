@@ -1,5 +1,9 @@
-const { DataProcessor } = require('../../utils/DataProcessor');
-const { mockValidRanks, mockDiscordMembers, mockGW2Members } = require('../mocks/mockData');
+const { DataProcessor } = require('../../src/utils/DataProcessor');
+const {
+  mockValidRanks,
+  mockDiscordMembers,
+  mockGW2Members,
+} = require('../mocks/mockData');
 
 test('excessGW2 with same members', () => {
   const dataProcessor = new DataProcessor(
@@ -9,7 +13,7 @@ test('excessGW2 with same members', () => {
   );
 
   expect(dataProcessor.getExcessGW2()).toEqual([]);
-})
+});
 
 test('excessGW2 with one missing discord', () => {
   const dataProcessor = new DataProcessor(
@@ -18,7 +22,9 @@ test('excessGW2 with one missing discord', () => {
     mockValidRanks
   );
 
-  expect(dataProcessor.getExcessGW2()).toEqual([mockGW2Members[mockGW2Members.length - 1]]);
+  expect(dataProcessor.getExcessGW2()).toEqual([
+    mockGW2Members[mockGW2Members.length - 1],
+  ]);
 });
 
 test('excessGW2 with one missing gw2', () => {
@@ -29,4 +35,4 @@ test('excessGW2 with one missing gw2', () => {
   );
 
   expect(dataProcessor.getExcessGW2()).toEqual([]);
-})
+});
