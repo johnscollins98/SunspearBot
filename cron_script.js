@@ -27,9 +27,11 @@ client.on('ready', async () => {
     const channel = guild.channels.resolve(process.env.NOTIFICATION_CHANNEL_ID);
     if (!channel) throw "Can't find channel";
 
+    const author = guild.member(process.env.TO_TAG);
+
     await commands({
       content: `<@${client.user.id}> requiredActions`,
-      author: { id: process.env.TO_TAG },
+      author,
       channel,
       guild
     }, client)
