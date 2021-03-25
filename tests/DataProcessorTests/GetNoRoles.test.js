@@ -1,12 +1,12 @@
-const { DataProcessor } = require("../../utils/DataProcessor");
+const { DataProcessor } = require('../../utils/DataProcessor');
 const {
   mockValidRanks,
   mockDiscordMembers,
   mockGW2Members,
-} = require("../mocks/mockData");
-const MockDiscordUser = require("../mocks/MockDiscordUser");
+} = require('../mocks/mockData');
+const MockDiscordUser = require('../mocks/MockDiscordUser');
 
-test("getNoRoles runs without failing", () => {
+test('getNoRoles runs without failing', () => {
   const dataProcessor = new DataProcessor(
     mockGW2Members,
     mockDiscordMembers,
@@ -16,7 +16,7 @@ test("getNoRoles runs without failing", () => {
   dataProcessor.getNoRoles();
 });
 
-test("getNoRoles with no candidates", () => {
+test('getNoRoles with no candidates', () => {
   const dataProcessor = new DataProcessor(
     mockGW2Members,
     mockDiscordMembers,
@@ -26,13 +26,8 @@ test("getNoRoles with no candidates", () => {
   expect(dataProcessor.getNoRoles()).toEqual([]);
 });
 
-test("getNoRoles with a candidate", () => {
-  const candidate = new MockDiscordUser(
-    "Mock",
-    123,
-    [],
-    12345678
-  );
+test('getNoRoles with a candidate', () => {
+  const candidate = new MockDiscordUser('Mock', 123, [], 12345678);
   const ourDiscordMembers = [...mockDiscordMembers, candidate];
 
   const dataProcessor = new DataProcessor(
@@ -41,13 +36,18 @@ test("getNoRoles with a candidate", () => {
     mockValidRanks
   );
 
-  expect(dataProcessor.getNoRoles()).toEqual([
-    {
-      name: candidate.displayName,
-      joined: candidate.joinedTimestamp,
-      id: candidate.id,
-      roles: candidate.roles.cache.array().map((o) => o.name),
-      role: candidate.roles.cache.array().map((o) => o.name)[0],
-    },
-  ]);
+  expect(dataProcessor.getNoRoles()).toEqual([candidate]);
+});
+
+test('getNoRoles with a bot', () => {
+  const candidate = new MockDiscordUser('Mock', 123, ['Bots'], 12345678);
+  const ourDiscordMembers = [...mockDiscordMembers, candidate];
+
+  const dataProcessor = new DataProcessor(
+    mockGW2Members,
+    ourDiscordMembers,
+    mockValidRanks
+  );
+
+  expect(dataProcessor.getNoRoles()).toEqual([]);
 });

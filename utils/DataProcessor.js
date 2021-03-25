@@ -1,10 +1,10 @@
-const { User } = require('discord.js');
+const { GuildMember } = require('discord.js');
 
 class DataProcessor {
   /**
    * Constructor
    * @param {Array<{name: string, rank: string, joined: string}>} gw2Members
-   * @param {Array<User>} discordMembers
+   * @param {Array<GuildMember>} discordMembers
    * @param {Array<{id: string, order: number}>} validRanks
    */
   constructor(gw2Members, discordMembers, validRanks) {
@@ -17,17 +17,7 @@ class DataProcessor {
       gw2Members.map((o) => new GW2Member(o.name, o.rank, o.joined))
     );
 
-    this._discordMembers = this._sortDiscordMembers(
-      discordMembers.map((m) => {
-        const roles = m.roles.cache
-          .array()
-          .filter((r) => Object.keys(this._validRanks).includes(r.name))
-          .map((r) => r.name);
-        const role = roles[0];
-
-        return new DiscordMember(m.displayName, m.id, role, roles, m.joinedTimestamp);
-      })
-    );
+    this._discordMembers = this._sortDiscordMembers(discordMembers);
   }
 
   /**
@@ -67,20 +57,20 @@ class DataProcessor {
 
   /**
    * Get discord accounts that can't be found in GW2.
-   * @returns {Array<DiscordMember>} excess discord members
+   * @returns {Array<GuildMember>} excess discord members
    */
   getExcessDiscord() {
     return this._discordMembers.filter(
       (discordMember) =>
         !this._gw2Members.some((gw2Member) =>
-          this.matchDiscordName(gw2Member.name, discordMember.name)
+          this.matchDiscordName(gw2Member.name, discordMember.displayName)
         )
     );
   }
 
   /**
    * Get discord members sorted by rank then data
-   * @returns {Array<DiscordMember>} sorted discord members
+   * @returns {Array<GuildMember>} sorted discord members
    */
   getDiscordRoster() {
     return this._discordMembers;
@@ -90,12 +80,12 @@ class DataProcessor {
    * Find Discord Member matching a given test name
    *
    * @param {string} testName
-   * @returns {DiscordMember} found discord member
+   * @returns {GuildMember} found discord member
    */
   findDiscordRecord = (testName) => {
     // check for exact match
     const discordMember = this._discordMembers.find((m) =>
-      this.matchDiscordName(testName, m.name)
+      this.matchDiscordName(testName, m.displayName)
     );
 
     return discordMember;
@@ -111,7 +101,10 @@ class DataProcessor {
     testName = testName.split('.')[0].toLowerCase();
     discordName = discordName
       .toLowerCase()
-      .replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '') // strip any emojis
+      .replace(
+        /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
+        ''
+      ) // strip any emojis
       .trim(); // trim any leading/trailing whitespace (should only be present if they have an emoji at the start)
 
     return discordName === testName || discordName.includes(`(${testName})`);
@@ -119,18 +112,18 @@ class DataProcessor {
 
   /**
    * Get Discord Members with no roles
-   * @returns {Array<DiscordMember>}
+   * @returns {Array<GuildMember>}
    */
   getNoRoles() {
-    return this._discordMembers.filter((o) => !o.role);
+    return this._discordMembers.filter((o) => !this._getRole(o));
   }
 
   /**
    * Get Discord Members with multiple roles
-   * @returns {Array<DiscordMember>}
+   * @returns {Array<GuildMember>}
    */
   getMultipleRoles() {
-    return this._discordMembers.filter((o) => o.roles.length > 1);
+    return this._discordMembers.filter((o) => this._getRoles(o).length > 1);
   }
 
   /**
@@ -143,13 +136,13 @@ class DataProcessor {
       .filter((gw2) => {
         const discordMember = this.findDiscordRecord(gw2.name);
         if (!discordMember) return false;
-        if (discordMember.roles.length !== 1) return false;
+        if (this._getRoles(discordMember).length !== 1) return false;
 
-        return discordMember.role !== gw2.rank;
+        return this._getRole(discordMember) !== gw2.rank;
       })
       .map((gw2) => {
         const discordMember = this.findDiscordRecord(gw2.name);
-        return `<@${discordMember.id}> (${gw2.rank}/${discordMember.role})`;
+        return `${discordMember} (${gw2.rank}/${this._getRole(discordMember)})`;
       });
   };
 
@@ -164,13 +157,15 @@ class DataProcessor {
       });
     }
 
-    const excessDiscord = this
-      .getExcessDiscord()
-      .filter((o) => o.role !== 'Bots' && o.role !== 'Guest');
+    const excessDiscord = this.getExcessDiscord().filter(
+      (o) => this._getRole(o) !== 'Bots' && this._getRole(o) !== 'Guest'
+    );
     if (excessDiscord.length) {
       records.push({
         key: 'Extra Discord',
-        value: excessDiscord.map((o) => `<@${o.id}> (${o.role || 'No Role'})`),
+        value: excessDiscord.map(
+          (o) => `${o} (${this._getRole(o) || 'No Role'})`
+        ),
       });
     }
 
@@ -178,7 +173,7 @@ class DataProcessor {
     if (noRoles.length) {
       records.push({
         key: 'Has No Roles',
-        value: noRoles.map((o) => `<@${o.id}>`),
+        value: noRoles,
       });
     }
 
@@ -186,7 +181,12 @@ class DataProcessor {
     if (multipleRoles.length) {
       records.push({
         key: 'Has Multiple Roles',
-        value: multipleRoles.map((o) => `<@${o.id}> (${o.roles.join(', ')})`),
+        value: multipleRoles.map(
+          (o) =>
+            `${o} (${this._getRoles(o)
+              .map((o) => o.name)
+              .join(', ')})`
+        ),
       });
     }
 
@@ -207,7 +207,7 @@ class DataProcessor {
     }
 
     return records;
-  }
+  };
 
   // Helper methods - not supposed to be used outside of the class.
 
@@ -242,14 +242,14 @@ class DataProcessor {
 
   /**
    * Sort discord member by rank then date
-   * @param {Array<DiscordMember>} discordMembers discord members to sort
-   * @returns {Array<DiscordMember>} sorted discord members
+   * @param {Array<GuildMember>} discordMembers discord members to sort
+   * @returns {Array<GuildMember>} sorted discord members
    */
   _sortDiscordMembers(discordMembers) {
     return discordMembers.sort((a, b) => {
-      let value = this._compareRank(a.role, b.role);
+      let value = this._compareRank(this._getRole(a), this._getRole(b));
       if (value === 0) {
-        value = this._compareDate(a.joined, b.joined);
+        value = this._compareDate(a.joinedTimestamp, b.joinedTimestamp);
       }
       return value;
     });
@@ -269,6 +269,28 @@ class DataProcessor {
       return value;
     });
   }
+
+  /**
+   * Get the first role of a Discord Member.
+   *
+   * @param {GuildMember} discordMember Discord Member to get role
+   * @returns {string} Discord Role
+   */
+  _getRole(discordMember) {
+    const role = this._getRoles(discordMember)[0];
+    return role ? role.name : null;
+  }
+
+  /**
+   *
+   * @param {GuildMember} discordMember
+   * @returns {Array<string>} Discord Roles
+   */
+  _getRoles(discordMember) {
+    return discordMember.roles.cache
+      .array()
+      .filter((r) => Object.keys(this._validRanks).includes(r.name));
+  }
 }
 
 class GW2Member {
@@ -285,25 +307,7 @@ class GW2Member {
   }
 }
 
-class DiscordMember {
-  /**
-   * Constructor
-   * @param {string} name
-   * @param {string} role
-   * @param {Array<string>} roles
-   * @param {number} joined
-   */
-  constructor(name, id, role, roles, joined) {
-    this.name = name;
-    this.id = id;
-    this.role = role;
-    this.roles = roles;
-    this.joined = joined;
-  }
-}
-
 module.exports = {
   DataProcessor,
-  DiscordMember,
   GW2Member,
 };

@@ -1,12 +1,12 @@
-const { DataProcessor } = require("../../utils/DataProcessor");
+const { DataProcessor } = require('../../utils/DataProcessor');
 const {
   mockValidRanks,
   mockDiscordMembers,
   mockGW2Members,
-} = require("../mocks/mockData");
-const MockDiscordUser = require("../mocks/MockDiscordUser");
+} = require('../mocks/mockData');
+const MockDiscordUser = require('../mocks/MockDiscordUser');
 
-test("getMultipleRoles runs without failing", () => {
+test('getMultipleRoles runs without failing', () => {
   const dataProcessor = new DataProcessor(
     mockGW2Members,
     mockDiscordMembers,
@@ -16,7 +16,7 @@ test("getMultipleRoles runs without failing", () => {
   dataProcessor.getMultipleRoles();
 });
 
-test("getMultipleRoles with no candidates", () => {
+test('getMultipleRoles with no candidates', () => {
   const dataProcessor = new DataProcessor(
     mockGW2Members,
     mockDiscordMembers,
@@ -26,11 +26,11 @@ test("getMultipleRoles with no candidates", () => {
   expect(dataProcessor.getMismatchedRoles()).toEqual([]);
 });
 
-test("getMultipleRoles with a candidate", () => {
+test('getMultipleRoles with a candidate', () => {
   const candidate = new MockDiscordUser(
-    "Mock",
+    'Mock',
     123,
-    ["Spearmarshal", "General"],
+    ['Spearmarshal', 'General'],
     12345678
   );
   const ourDiscordMembers = [...mockDiscordMembers, candidate];
@@ -41,13 +41,5 @@ test("getMultipleRoles with a candidate", () => {
     mockValidRanks
   );
 
-  expect(dataProcessor.getMultipleRoles()).toEqual([
-    {
-      name: candidate.displayName,
-      joined: candidate.joinedTimestamp,
-      id: candidate.id,
-      roles: candidate.roles.cache.array().map((o) => o.name),
-      role: candidate.roles.cache.array().map((o) => o.name)[0],
-    },
-  ]);
+  expect(dataProcessor.getMultipleRoles()).toEqual([candidate]);
 });

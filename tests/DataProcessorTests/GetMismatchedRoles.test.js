@@ -1,12 +1,12 @@
-const { DataProcessor } = require("../../utils/DataProcessor");
+const { DataProcessor } = require('../../utils/DataProcessor');
 const {
   mockValidRanks,
   mockDiscordMembers,
   mockGW2Members,
-} = require("../mocks/mockData");
-const MockDiscordUser = require("../mocks/MockDiscordUser");
+} = require('../mocks/mockData');
+const MockDiscordUser = require('../mocks/MockDiscordUser');
 
-test("getMismatchedRoles runs without failing", () => {
+test('getMismatchedRoles runs without failing', () => {
   const dataProcessor = new DataProcessor(
     mockGW2Members,
     mockDiscordMembers,
@@ -16,7 +16,7 @@ test("getMismatchedRoles runs without failing", () => {
   dataProcessor.getMismatchedRoles();
 });
 
-test("getMismatchedRoles with no candidates", () => {
+test('getMismatchedRoles with no candidates', () => {
   const dataProcessor = new DataProcessor(
     mockGW2Members,
     mockDiscordMembers,
@@ -26,11 +26,11 @@ test("getMismatchedRoles with no candidates", () => {
   expect(dataProcessor.getMismatchedRoles()).toEqual([]);
 });
 
-test("getMismatchedRoles with an extra discord", () => {
+test('getMismatchedRoles with an extra discord', () => {
   const extra = new MockDiscordUser(
-    "Mock",
+    'Mock',
     123,
-    ["Spearmarshal", "General"],
+    ['Spearmarshal', 'General'],
     12345678
   );
   const ourDiscordMembers = [...mockDiscordMembers, extra];
@@ -44,11 +44,11 @@ test("getMismatchedRoles with an extra discord", () => {
   expect(dataProcessor.getMismatchedRoles()).toEqual([]);
 });
 
-test("getMismatchedRoles with an extra gw2", () => {
+test('getMismatchedRoles with an extra gw2', () => {
   const extra = {
-    name: "Mock",
-    rank: "Spearmarshal",
-    joined: "2020-03-01T00:00:00.000Z",
+    name: 'Mock',
+    rank: 'Spearmarshal',
+    joined: '2020-03-01T00:00:00.000Z',
   };
 
   const dataProcessor = new DataProcessor(
@@ -60,10 +60,15 @@ test("getMismatchedRoles with an extra gw2", () => {
   expect(dataProcessor.getMismatchedRoles()).toEqual([]);
 });
 
-test("getMismatchedRoles with multiple discord roles", () => {
+test('getMismatchedRoles with multiple discord roles', () => {
   const ourDiscordMembers = [
     ...mockDiscordMembers.slice(0, mockDiscordMembers.length - 2),
-    new MockDiscordUser("SecondSpear", 123, ["First Spear", "Second Spear"], 123456),
+    new MockDiscordUser(
+      'SecondSpear',
+      123,
+      ['First Spear', 'Second Spear'],
+      123456
+    ),
   ];
 
   const dataProcessor = new DataProcessor(
@@ -75,10 +80,10 @@ test("getMismatchedRoles with multiple discord roles", () => {
   expect(dataProcessor.getMismatchedRoles()).toEqual([]);
 });
 
-test("getMismatchedRoles with no discord roles", () => {
+test('getMismatchedRoles with no discord roles', () => {
   const ourDiscordMembers = [
     ...mockDiscordMembers.slice(0, mockDiscordMembers.length - 2),
-    new MockDiscordUser("SecondSpear", 123, [], 123456),
+    new MockDiscordUser('SecondSpear', 123, [], 123456),
   ];
 
   const dataProcessor = new DataProcessor(
@@ -90,10 +95,16 @@ test("getMismatchedRoles with no discord roles", () => {
   expect(dataProcessor.getMismatchedRoles()).toEqual([]);
 });
 
-test("getMismatchedRoles with a candidate", () => {
+test('getMismatchedRoles with a candidate', () => {
+  const candidateObj = new MockDiscordUser(
+    'SecondSpear',
+    342,
+    ['First Spear'],
+    123456
+  );
   const ourDiscordMembers = [
     ...mockDiscordMembers.slice(0, mockDiscordMembers.length - 2),
-    new MockDiscordUser("SecondSpear", 342, ["First Spear"], 123456),
+    candidateObj,
   ];
 
   const dataProcessor = new DataProcessor(
@@ -103,6 +114,6 @@ test("getMismatchedRoles with a candidate", () => {
   );
 
   expect(dataProcessor.getMismatchedRoles()).toEqual([
-    "<@342> (Second Spear/First Spear)",
+    `${candidateObj} (Second Spear/First Spear)`,
   ]);
 });

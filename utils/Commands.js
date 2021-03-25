@@ -39,13 +39,16 @@ const commands = async (msg, client) => {
     const adminRole = await configRepository.getAdminRole();
     if (!adminRole) return true; // no admin role, so everyone is authorized.
 
-    const val = msg.guild.member(msg.author.id).roles.cache.array().find(o => o.id === adminRole);
+    const val = msg.guild
+      .member(msg.author.id)
+      .roles.cache.array()
+      .find((o) => o.id === adminRole);
     return val;
-  }
+  };
 
   const options = {
     color: '#00ff00',
-    text: `<@${msg.author.id}>, HERE IS YOUR RES-PONSE`,
+    text: `${msg.author}, HERE IS YOUR RES-PONSE`,
   };
 
   if (msg.content.trim().match(new RegExp(`^<@\\!?${client.user.id}>$`))) {
@@ -64,7 +67,10 @@ const commands = async (msg, client) => {
         if (!currentId) return msg.reply('No current admin role.');
 
         const found = msg.guild.roles.resolve(currentId);
-        if (!found) return msg.reply(`Admin role is currently invalid (cannot be found) - ${currentId}`);
+        if (!found)
+          return msg.reply(
+            `Admin role is currently invalid (cannot be found) - ${currentId}`
+          );
 
         return msg.reply(`Admin role is: ${found.name}`);
       }
@@ -75,7 +81,7 @@ const commands = async (msg, client) => {
       await configRepository.setAdminRole(roleId);
       return msg.reply(`Set admin role to ${found.name}`);
     } else {
-      return msg.reply('Only a guild Administrator can set the admin role.')
+      return msg.reply('Only a guild Administrator can set the admin role.');
     }
   }
 
@@ -117,7 +123,7 @@ const commands = async (msg, client) => {
 
       const res = await channel.bulkDelete(numberToDelete, true);
       const reply = await channel.send(
-        `<@${author.id}>, DE-LE-TED ${res.size} MESS-A-GES`
+        `${author}, DE-LE-TED ${res.size} MESS-A-GES`
       );
 
       setTimeout(() => reply.delete(), 2000);
@@ -144,8 +150,8 @@ const commands = async (msg, client) => {
       client,
       dataProcessor.getDiscordRoster(),
       24,
-      (o) => o.name,
-      (o) => o.role || 'No Role',
+      (o) => o.displayName,
+      (o) => dataProcessor._getRole(o) || 'No Role',
       { ...options, title: 'Discord Roster' }
     );
   }
@@ -153,8 +159,8 @@ const commands = async (msg, client) => {
   if (content === 'excessGW2') {
     const excessGW2 = dataProcessor.getExcessGW2();
     const data = {};
-    excessGW2.forEach(m => {
-      const rank = m.rank
+    excessGW2.forEach((m) => {
+      const rank = m.rank;
       if (!data[rank]) data[rank] = [];
       data[rank].push(m.name);
     });
@@ -172,11 +178,11 @@ const commands = async (msg, client) => {
   if (content === 'excessDiscord') {
     const excessDiscord = dataProcessor.getExcessDiscord();
     const data = {};
-    excessDiscord.forEach(m => {
-      const role = m.role || "No Role";
+    excessDiscord.forEach((m) => {
+      const role = dataProcessor._getRole(m) || 'No Role';
       if (!data[role]) data[role] = [];
-      data[role].push(`<@${m.id}>`);
-    })
+      data[role].push(m);
+    });
 
     await sendPagedEmbed(
       msg.channel,

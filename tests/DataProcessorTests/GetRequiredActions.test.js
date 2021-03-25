@@ -32,7 +32,7 @@ test('finds excessDiscord', () => {
   );
 
   expect(dataProcessor.getRequiredActions()).toEqual([
-    { key: 'Extra Discord', value: ['<@123> (General)'] },
+    { key: 'Extra Discord', value: [`${extra} (General)`] },
   ]);
 });
 
@@ -64,7 +64,7 @@ test('finds no roles', () => {
   );
 
   expect(dataProcessor.getRequiredActions()).toEqual([
-    { key: 'Has No Roles', value: ['<@123>'] },
+    { key: 'Has No Roles', value: [candidate] },
   ]);
 });
 
@@ -84,7 +84,10 @@ test('find multiple roles', () => {
   );
 
   expect(dataProcessor.getRequiredActions()).toEqual([
-    { key: 'Has Multiple Roles', value: ['<@123> (Spearmarshal, General)'] },
+    {
+      key: 'Has Multiple Roles',
+      value: [`${candidate} (Spearmarshal, General)`],
+    },
   ]);
 });
 
@@ -112,7 +115,7 @@ test('find mismatched role', () => {
   expect(dataProcessor.getRequiredActions()).toEqual([
     {
       key: 'Mismatched Roles (GW2/Discord)',
-      value: ['<@123> (General/Spearmarshal)'],
+      value: [`${this.mockDiscordMembers[0]} (General/Spearmarshal)`],
     },
   ]);
 });

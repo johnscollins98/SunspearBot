@@ -50,7 +50,7 @@ While you wait for an officer to invite you please check out the following chann
     );
     if (channel) {
       channel.send(
-        `Hello, <@${member.id}> welcome 🌞! Please send your GW2 account name in <#${channel.id}> and we'll get you invited ASAP!`
+        `Hello, ${member} welcome 🌞! Please send your GW2 account name in <#${channel.id}> and we'll get you invited ASAP!`
       );
     }
   }

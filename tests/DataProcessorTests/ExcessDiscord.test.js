@@ -1,5 +1,9 @@
 const { DataProcessor } = require('../../utils/DataProcessor');
-const { mockValidRanks, mockDiscordMembers, mockGW2Members } = require('../mocks/mockData');
+const {
+  mockValidRanks,
+  mockDiscordMembers,
+  mockGW2Members,
+} = require('../mocks/mockData');
 
 test('excessDiscord with same members', () => {
   const dataProcessor = new DataProcessor(
@@ -9,7 +13,7 @@ test('excessDiscord with same members', () => {
   );
 
   expect(dataProcessor.getExcessDiscord()).toEqual([]);
-})
+});
 
 test('excessDiscord with one missing discord', () => {
   const dataProcessor = new DataProcessor(
@@ -29,14 +33,5 @@ test('excessDiscord with one missing gw2', () => {
   );
 
   const expectedObj = mockDiscordMembers[0];
-  const roles = expectedObj.roles.cache.array().map(o => o.name);
-  const expected = {
-    name: expectedObj.displayName,
-    joined: expectedObj.joinedTimestamp,
-    id: expectedObj.id,
-    roles,
-    role: roles[0]
-  }
-
-  expect(dataProcessor.getExcessDiscord()).toEqual([expected]);
-})
+  expect(dataProcessor.getExcessDiscord()).toEqual([expectedObj]);
+});

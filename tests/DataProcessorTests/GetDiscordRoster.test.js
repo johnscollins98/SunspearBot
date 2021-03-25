@@ -1,12 +1,12 @@
-const { DataProcessor } = require("../../utils/DataProcessor");
+const { DataProcessor } = require('../../utils/DataProcessor');
 const {
   mockValidRanks,
   mockDiscordMembers,
   mockGW2Members,
-} = require("../mocks/mockData");
-const MockDiscordUser = require("../mocks/MockDiscordUser");
+} = require('../mocks/mockData');
+const MockDiscordUser = require('../mocks/MockDiscordUser');
 
-test("getDiscordRoster runs without failing", () => {
+test('getDiscordRoster runs without failing', () => {
   const dataProcessor = new DataProcessor(
     mockGW2Members,
     mockDiscordMembers,
@@ -16,30 +16,18 @@ test("getDiscordRoster runs without failing", () => {
   dataProcessor.getDiscordRoster();
 });
 
-test("getDiscordRoster returns proper roster", () => {
+test('getDiscordRoster returns proper roster', () => {
   const dataProcessor = new DataProcessor(
     mockGW2Members,
     mockDiscordMembers,
     mockValidRanks
   );
 
-  const expected = mockDiscordMembers.map((m) => {
-    const roles = m.roles.cache.array().map((o) => o.name);
-    const role = roles[0];
-
-    return {
-      name: m.displayName,
-      joined: m.joinedTimestamp,
-      id: m.id,
-      roles,
-      role,
-    };
-  });
-
+  const expected = mockDiscordMembers;
   expect(dataProcessor.getDiscordRoster()).toEqual(expected);
 });
 
-test("getDiscordRoster sorts properly", () => {
+test('getDiscordRoster sorts properly', () => {
   // re-arrange some objects,
   const ourDiscordMembers = [
     mockDiscordMembers[3],
@@ -59,27 +47,17 @@ test("getDiscordRoster sorts properly", () => {
     mockValidRanks
   );
 
-  const expected = mockDiscordMembers.map((m) => {
-    const roles = m.roles.cache.array().map((o) => o.name);
-    const role = roles[0];
-
-    return {
-      name: m.displayName,
-      joined: m.joinedTimestamp,
-      id: m.id,
-      roles,
-      role,
-    };
-  });
+  const expected = mockDiscordMembers;
 
   expect(dataProcessor.getDiscordRoster()).toEqual(expected);
 });
 
-test("getDiscordRoster filters non-valid roles, and sorts without roles", () => {
+test('getDiscordRoster filters non-valid roles, and sorts without roles', () => {
+  const expected = new MockDiscordUser('Mock', 789, ['TestRoles'], 1234567);
   const ourDiscordMembers = [
     ...mockDiscordMembers,
-    new MockDiscordUser("Mock", 789, ["TestRoles"], 1234567),
-    new MockDiscordUser("Mock2", 876, ["TestRoles"], 1234566),
+    expected,
+    new MockDiscordUser('Mock2', 876, ['TestRoles'], 1234566),
   ];
 
   const dataProcessor = new DataProcessor(
@@ -90,11 +68,5 @@ test("getDiscordRoster filters non-valid roles, and sorts without roles", () => 
 
   const res = dataProcessor.getDiscordRoster();
 
-  expect(res[res.length - 1]).toEqual({
-    name: "Mock",
-    id: 789,
-    roles: [],
-    role: undefined,
-    joined: 1234567,
-  });
+  expect(res[res.length - 1]).toEqual(expected);
 });
