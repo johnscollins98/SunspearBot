@@ -148,7 +148,7 @@ class DataProcessor {
 
   /**
    * Gets all required actions for the server.
-   * 
+   *
    * @returns {Array<{key: string, value: Array<string>}}
    */
   getRequiredActions = () => {

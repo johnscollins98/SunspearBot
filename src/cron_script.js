@@ -2,8 +2,7 @@ require('dotenv').config();
 const { Client } = require('discord.js');
 const { commands } = require('./utils/Commands');
 const client = new Client();
-const mongoose = require("mongoose");
-
+const mongoose = require('mongoose');
 
 // DB connection
 const dbUri = process.env.ATLAS_URI;
@@ -20,21 +19,24 @@ connection.once('open', async () => {
 
 client.on('ready', async () => {
   try {
-    console.log(`Logged in as ${client.user.tag}`)
+    console.log(`Logged in as ${client.user.tag}`);
     const guild = client.guilds.resolve(process.env.DISCORD_GUILD_ID);
     if (!guild) throw "Can't find guild";
-    
+
     const channel = guild.channels.resolve(process.env.NOTIFICATION_CHANNEL_ID);
     if (!channel) throw "Can't find channel";
 
     const author = guild.member(process.env.TO_TAG);
 
-    await commands({
-      content: `<@${client.user.id}> requiredActions`,
-      author,
-      channel,
-      guild
-    }, client)
+    await commands(
+      {
+        content: `<@${client.user.id}> requiredActions`,
+        author,
+        channel,
+        guild,
+      },
+      client
+    );
   } catch (err) {
     console.error(err);
   } finally {

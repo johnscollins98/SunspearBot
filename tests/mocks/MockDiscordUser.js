@@ -6,7 +6,7 @@ class MockDiscordUser {
       cache: {
         array: () =>
           roles.map((o) => ({
-            name: o
+            name: o,
           })),
       },
     };
