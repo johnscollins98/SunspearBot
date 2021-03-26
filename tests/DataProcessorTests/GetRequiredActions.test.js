@@ -6,116 +6,121 @@ const {
 } = require('../mocks/mockData');
 const MockDiscordUser = require('../mocks/MockDiscordUser');
 
-beforeAll(() => {
-  this.mockGW2Members = [...mockGW2Members];
-  this.mockGW2Members.splice(4, 1);
+describe('get required actions', () => {
+  let ourGW2;
+  let ourDiscord;
 
-  this.mockDiscordMembers = [...mockDiscordMembers];
-  this.mockDiscordMembers.splice(4, 1);
-});
+  beforeAll(() => {
+    ourGW2 = [...mockGW2Members];
+    ourGW2.splice(4, 1);
 
-test('runs without failing', () => {
-  const dataProcessor = new DataProcessor(
-    this.mockGW2Members,
-    this.mockDiscordMembers,
-    mockValidRanks
-  );
-  dataProcessor.getRequiredActions();
-});
+    ourDiscord = [...mockDiscordMembers];
+    ourDiscord.splice(4, 1);
+  });
 
-test('finds excessDiscord', () => {
-  const extra = new MockDiscordUser('Mock', 123, ['General'], 123456);
-  const dataProcessor = new DataProcessor(
-    this.mockGW2Members,
-    [...this.mockDiscordMembers, extra],
-    mockValidRanks
-  );
+  test('runs without failing', () => {
+    const dataProcessor = new DataProcessor(
+      ourGW2,
+      ourDiscord,
+      mockValidRanks
+    );
+    dataProcessor.getRequiredActions();
+  });
 
-  expect(dataProcessor.getRequiredActions()).toEqual([
-    { key: 'Extra Discord', value: [`${extra} (General)`] },
-  ]);
-});
+  test('finds excessDiscord', () => {
+    const extra = new MockDiscordUser('Mock', 123, ['General'], 123456);
+    const dataProcessor = new DataProcessor(
+      ourGW2,
+      [...ourDiscord, extra],
+      mockValidRanks
+    );
 
-test('finds excessGW2', () => {
-  const extra = {
-    name: 'Mock',
-    rank: 'General',
-    joined: '2020-01-01T00:00:00.000Z',
-  };
-  const dataProcessor = new DataProcessor(
-    [...this.mockGW2Members, extra],
-    this.mockDiscordMembers,
-    mockValidRanks
-  );
+    expect(dataProcessor.getRequiredActions()).toEqual([
+      { key: 'Extra Discord', value: [`${extra} (General)`] },
+    ]);
+  });
 
-  expect(dataProcessor.getRequiredActions()).toEqual([
-    { key: 'Extra GW2', value: ['Mock'] },
-  ]);
-});
+  test('finds excessGW2', () => {
+    const extra = {
+      name: 'Mock',
+      rank: 'General',
+      joined: '2020-01-01T00:00:00.000Z',
+    };
+    const dataProcessor = new DataProcessor(
+      [...ourGW2, extra],
+      ourDiscord,
+      mockValidRanks
+    );
 
-test('finds no roles', () => {
-  const candidate = new MockDiscordUser('Test', 123, [], 1234567);
-  const copyDiscord = [...this.mockDiscordMembers];
-  copyDiscord[0] = candidate;
-  const dataProcessor = new DataProcessor(
-    this.mockGW2Members,
-    copyDiscord,
-    mockValidRanks
-  );
+    expect(dataProcessor.getRequiredActions()).toEqual([
+      { key: 'Extra GW2', value: ['Mock'] },
+    ]);
+  });
 
-  expect(dataProcessor.getRequiredActions()).toEqual([
-    { key: 'Has No Roles', value: [candidate] },
-  ]);
-});
+  test('finds no roles', () => {
+    const candidate = new MockDiscordUser('Test', 123, [], 1234567);
+    const copyDiscord = [...ourDiscord];
+    copyDiscord[0] = candidate;
+    const dataProcessor = new DataProcessor(
+      ourGW2,
+      copyDiscord,
+      mockValidRanks
+    );
 
-test('find multiple roles', () => {
-  const candidate = new MockDiscordUser(
-    'Test',
-    123,
-    ['Spearmarshal', 'General'],
-    12345767
-  );
-  const copyDiscord = [...this.mockDiscordMembers];
-  copyDiscord[0] = candidate;
-  const dataProcessor = new DataProcessor(
-    this.mockGW2Members,
-    copyDiscord,
-    mockValidRanks
-  );
+    expect(dataProcessor.getRequiredActions()).toEqual([
+      { key: 'Has No Roles', value: [candidate] },
+    ]);
+  });
 
-  expect(dataProcessor.getRequiredActions()).toEqual([
-    {
-      key: 'Has Multiple Roles',
-      value: [`${candidate} (Spearmarshal, General)`],
-    },
-  ]);
-});
+  test('find multiple roles', () => {
+    const candidate = new MockDiscordUser(
+      'Test',
+      123,
+      ['Spearmarshal', 'General'],
+      12345767
+    );
+    const copyDiscord = [...ourDiscord];
+    copyDiscord[0] = candidate;
+    const dataProcessor = new DataProcessor(
+      ourGW2,
+      copyDiscord,
+      mockValidRanks
+    );
 
-test('find needs promotion', () => {
-  const dataProcessor = new DataProcessor(
-    mockGW2Members,
-    mockDiscordMembers,
-    mockValidRanks
-  );
-  expect(dataProcessor.getRequiredActions()).toEqual([
-    { key: 'Needs Promotion', value: ['NeedsPromoted.5432'] },
-  ]);
-});
+    expect(dataProcessor.getRequiredActions()).toEqual([
+      {
+        key: 'Has Multiple Roles',
+        value: [`${candidate} (Spearmarshal, General)`],
+      },
+    ]);
+  });
 
-test('find mismatched role', () => {
-  const ourGw2 = [
-    ...this.mockGW2Members,
-    { ...this.mockGW2Members[0], rank: 'General' },
-  ];
-  const dataProcessor = new DataProcessor(
-    ourGw2,
-    this.mockDiscordMembers,
-    mockValidRanks
-  );
-  expect(dataProcessor.getRequiredActions()).toEqual([
-    {
-      key: 'Mismatched Roles (GW2/Discord)',
-      value: [`${this.mockDiscordMembers[0]} (General/Spearmarshal)`],
-    },
-  ]);
+  test('find needs promotion', () => {
+    const dataProcessor = new DataProcessor(
+      mockGW2Members,
+      mockDiscordMembers,
+      mockValidRanks
+    );
+    expect(dataProcessor.getRequiredActions()).toEqual([
+      { key: 'Needs Promotion', value: ['NeedsPromoted.5432'] },
+    ]);
+  });
+
+  test('find mismatched role', () => {
+    const ourGw2 = [
+      ...ourGW2,
+      { ...ourGW2[0], rank: 'General' },
+    ];
+    const dataProcessor = new DataProcessor(
+      ourGw2,
+      ourDiscord,
+      mockValidRanks
+    );
+    expect(dataProcessor.getRequiredActions()).toEqual([
+      {
+        key: 'Mismatched Roles (GW2/Discord)',
+        value: [`${ourDiscord[0]} (General/Spearmarshal)`],
+      },
+    ]);
+  });
 });
