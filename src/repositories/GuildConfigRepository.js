@@ -4,7 +4,7 @@ class GuildConfigRepository {
   constructor(id) {
     this.id = id;
   }
-  
+
   async getConfig() {
     return await this._findOrCreateConfig();
   }
@@ -18,11 +18,11 @@ class GuildConfigRepository {
   }
 
   async setPrefix(prefix) {
-    const config = await this._findOrCreateConfig()
+    const config = await this._findOrCreateConfig();
     if (config) {
       config.prefix = prefix;
       return await config.save();
-    } 
+    }
     return null;
   }
 
