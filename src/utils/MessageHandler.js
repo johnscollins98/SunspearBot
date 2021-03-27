@@ -21,23 +21,30 @@ class MessageHandler {
   async handle(msg) {
     if (msg.author.bot) return;
 
-    if (await this._hasPrefix(msg)) {
-      msg.reply('Could not find this command.');
+    const prefix = (await this.guildConfigRepo.getPrefix()) || '^';
+    const match = await this._hasPrefix(msg, prefix);
+    if (match) {
+      const usedPrefix = match[1];
+      const strippedMsg = match[2];
+      if (!strippedMsg && usedPrefix !== prefix) {
+        msg.reply(`The prefix for this server is \`${prefix}\`.`);
+      } else {
+        msg.reply('Could not find this command.');
+      }
     }
   }
 
   /**
    * Check a Message has the expected prefix
-   * 
-   * @param {Message} msg 
+   *
+   * @param {Message} msg message to check
    * @returns {boolean} true if it has a prefix we expect
    */
-  async _hasPrefix(msg) {
-    const prefix = (await this.guildConfigRepo.getPrefix()) || '^';
+  async _hasPrefix(msg, prefix) {
     const content = msg.content;
 
     return content.match(
-      new RegExp(`(\\${prefix}|<@\\!?${this.client.user.id}>\s?)(\.*)`)
+      new RegExp(`(\\${prefix}|<@\\!?${this.client.user.id}>\\s?)(\.*)`)
     );
   }
 }
