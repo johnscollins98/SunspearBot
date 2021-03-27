@@ -45,7 +45,8 @@ describe('get required actions', () => {
     );
 
     expect(dataProcessor.getRequiredActions()).toEqual([
-      { key: 'Extra Discord', value: [`${extra} (No Role)}`] },
+      { key: 'Extra Discord', value: [`${extra} (No Role)`] },
+      { key: 'Has No Roles', value: [extra]}
     ]);
   });
 
