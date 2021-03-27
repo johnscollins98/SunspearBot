@@ -57,7 +57,7 @@ While you wait for an officer to invite you please check out the following chann
 });
 
 client.on('message', async (msg) => {
-  if (msg.author.id === client.user.id) return;
+  if (msg.author.bot) return;
 
   funResponses(msg);
   commands(msg, client);
