@@ -6,8 +6,6 @@ const { Client, Message } = require('discord.js');
 const { commands } = require('./utils/Commands');
 const client = new Client();
 
-const GuildConfig = require('./models/GuildConfig.model');
-
 // DB connection
 const dbUri = process.env.ATLAS_URI;
 mongoose.connect(dbUri, {
