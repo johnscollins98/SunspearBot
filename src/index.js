@@ -3,10 +3,10 @@ const mongoose = require('mongoose');
 
 const { Client, Message } = require('discord.js');
 
-const { commands } = require('./utils/Commands');
 const client = new Client();
 
-const GuildConfig = require('./models/GuildConfig.model');
+const MessageHandler = require('./utils/MessageHandler');
+const GuildConfigRepository = require('./repositories/GuildConfigRepository');
 
 // DB connection
 const dbUri = process.env.ATLAS_URI;
@@ -60,7 +60,10 @@ client.on('message', async (msg) => {
   if (msg.author.bot) return;
 
   funResponses(msg);
-  commands(msg, client);
+
+  const guildConfigRepo = new GuildConfigRepository(msg.guild.id);
+  const messageHandler = new MessageHandler(guildConfigRepo, client);
+  messageHandler.handle(msg);
 });
 
 /**
