@@ -19,11 +19,7 @@ describe('get required actions', () => {
   });
 
   test('runs without failing', () => {
-    const dataProcessor = new DataProcessor(
-      ourGW2,
-      ourDiscord,
-      mockValidRanks
-    );
+    const dataProcessor = new DataProcessor(ourGW2, ourDiscord, mockValidRanks);
     dataProcessor.getRequiredActions();
   });
 
@@ -37,6 +33,19 @@ describe('get required actions', () => {
 
     expect(dataProcessor.getRequiredActions()).toEqual([
       { key: 'Extra Discord', value: [`${extra} (General)`] },
+    ]);
+  });
+
+  test('finds excessDiscord without a role', () => {
+    const extra = new MockDiscordUser('Mock', 123, [], 123456);
+    const dataProcessor = new DataProcessor(
+      ourGW2,
+      [...ourDiscord, extra],
+      mockValidRanks
+    );
+
+    expect(dataProcessor.getRequiredActions()).toEqual([
+      { key: 'Extra Discord', value: [`${extra} (No Role)}`] },
     ]);
   });
 
@@ -107,15 +116,8 @@ describe('get required actions', () => {
   });
 
   test('find mismatched role', () => {
-    const ourGw2 = [
-      ...ourGW2,
-      { ...ourGW2[0], rank: 'General' },
-    ];
-    const dataProcessor = new DataProcessor(
-      ourGw2,
-      ourDiscord,
-      mockValidRanks
-    );
+    const ourGw2 = [...ourGW2, { ...ourGW2[0], rank: 'General' }];
+    const dataProcessor = new DataProcessor(ourGw2, ourDiscord, mockValidRanks);
     expect(dataProcessor.getRequiredActions()).toEqual([
       {
         key: 'Mismatched Roles (GW2/Discord)',
