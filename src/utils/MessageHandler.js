@@ -22,7 +22,7 @@ class MessageHandler {
     if (msg.author.bot) return;
 
     const prefix = (await this.guildConfigRepo.getPrefix()) || '^';
-    const match = await this.parseCommand(msg, prefix);
+    const match = this.parseCommand(msg, prefix);
     if (match) {
       const [_, usedPrefix, command, args] = match;
       if (command === 'prefix' || (!command && usedPrefix !== prefix)) {
@@ -41,7 +41,7 @@ class MessageHandler {
    * @param {Message} msg message to check
    * @returns {RegExpMatchArray} true if it has a prefix we expect
    */
-  async parseCommand(msg, prefix) {
+  parseCommand(msg, prefix) {
     const content = msg.content;
     const regex = `^(\\${prefix}|<@!?${this.client.user.id}>\\s?)([a-zA-Z]*)?\\s?(.*)?$`;
     return content.match(new RegExp(regex, 'i'));
@@ -57,6 +57,10 @@ class MessageHandler {
   async prefixCommand(msg, newPrefix, oldPrefix) {
     if (!newPrefix) {
       return await msg.reply(`The prefix for this server is \`${oldPrefix}\`.`);
+    }
+
+    if (!await this.authorHasAdminRole(msg)) {
+      return await msg.reply('You do not have permissions to set the prefix.');
     }
 
     const match = newPrefix.trim().match(/^[-!"£$%^&*_=+]+$/);
@@ -103,6 +107,26 @@ class MessageHandler {
 
     const res = await this.guildConfigRepo.setAdminRole(roleId);
     return msg.reply(`Set Admin Role to ${resolvedRole}`);
+  }
+
+  /**
+   * Check author of message has Admin Role
+   *
+   * @param {Message} msg
+   * @returns {Promise<boolean>} true if authorized
+   */
+  async authorHasAdminRole(msg) {
+    const adminRole = await this.guildConfigRepo.getAdminRole();
+    if (!adminRole) return true; // always authorized if no admin role set.
+
+    const resolvedRole = msg.guild.roles.resolve(adminRole);
+    if (!resolvedRole) {
+      msg.reply('Warning: Stored admin role cannot be found.');
+      return false;
+    }
+
+    const found = msg.guild.member(msg.author.id).roles.cache.get(adminRole);
+    return Boolean(found);
   }
 }
 
