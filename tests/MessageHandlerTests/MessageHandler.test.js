@@ -1,17 +1,41 @@
 const MessageHandler = require('../../src/utils/MessageHandler');
 const GuildConfigRepository = require('../../src/repositories/GuildConfigRepository');
-const { Message, Client } = require('discord.js');
+const { Message, Client, GuildMember } = require('discord.js');
 
 jest.mock('../../src/repositories/GuildConfigRepository');
 GuildConfigRepository.mockImplementation(() => ({
-  getPrefix: jest.fn().mockReturnValue('+'),
-  setPrefix: jest.fn().mockImplementation((prefix) => ({ prefix })),
+  getPrefix: jest.fn().mockResolvedValue('+'),
+  setPrefix: jest.fn().mockImplementation(
+    (prefix) =>
+      new Promise((resolve, reject) => {
+        resolve({ prefix });
+      })
+  ),
+  getAdminRole: jest.fn().mockResolvedValue('12345'),
+  setAdminRole: jest.fn().mockImplementation(
+    (adminRole) =>
+      new Promise((resolve) => {
+        resolve({ adminRole });
+      })
+  ),
 }));
 
 jest.mock('discord.js');
 Message.mockImplementation(() => ({
   reply: jest.fn(),
   author: {},
+  guild: {
+    roles: {
+      resolve: jest.fn().mockImplementation((id) => id),
+    },
+    member: jest.fn().mockImplementation(() => ({
+      hasPermission: jest.fn().mockReturnValue(true),
+    })),
+  },
+}));
+
+GuildMember.mockImplementation(() => ({
+  hasPermission: jest.fn().mockReturnValue(true),
 }));
 
 Client.mockImplementation(() => ({
@@ -148,6 +172,15 @@ describe('handleMessage', () => {
       '+'
     );
   });
+
+  it('should call adminCommand for "adminRole" command', async () => {
+    message.content = '+adminRole 12345';
+    messageHandler.adminCommand = jest.fn();
+    await messageHandler.handle(message);
+
+    expect(messageHandler.adminCommand).toHaveBeenCalled();
+    expect(messageHandler.adminCommand).toHaveBeenCalledWith(message, '12345');
+  });
 });
 
 describe('prefixCommand', () => {
@@ -207,11 +240,91 @@ describe('prefixCommand', () => {
 
     for (const testCase of testCases) {
       const res = await messageHandler.prefixCommand(message, testCase, '+');
-      
+
       expect(guildConfigRepo.setPrefix).toHaveBeenCalledWith(testCase.trim());
-      expect(message.reply).toHaveBeenCalledWith(`Set the prefix to \`${testCase.trim()}\`.`);
+      expect(message.reply).toHaveBeenCalledWith(
+        `Set the prefix to \`${testCase.trim()}\`.`
+      );
 
       guildConfigRepo.setPrefix.mockClear();
     }
+  });
+});
+
+describe('adminCommand', () => {
+  /** @type {MessageHandler} */
+  let messageHandler;
+
+  /** @type {GuildConfigRepository} */
+  let guildConfigRepo;
+
+  /** @type {Message} */
+  let message;
+
+  /** @type {Client} */
+  let client;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    guildConfigRepo = new GuildConfigRepository();
+    message = new Message();
+    client = new Client();
+
+    messageHandler = new MessageHandler(guildConfigRepo, client);
+  });
+
+  it('should reply with the current admin if no roleId is passed and an admin exists', async () => {
+    await messageHandler.adminCommand(message, undefined);
+    expect(message.reply).toHaveBeenCalledWith('Current Admin is 12345');
+  });
+
+  it('should say no admin exists if no roleId is passed and no admin exists', async () => {
+    guildConfigRepo.getAdminRole.mockReturnValueOnce(null);
+    await messageHandler.adminCommand(message, undefined);
+    expect(message.reply).toHaveBeenCalledWith('No admin role set.');
+  });
+
+  it('should allow getting admin role without Administrator permissions', async () => {
+    message.guild.member.mockImplementation(() => ({
+      hasPermission: jest.fn().mockReturnValue(false),
+    }));
+
+    await messageHandler.adminCommand(message, undefined);
+    expect(message.reply).toHaveBeenCalledWith('Current Admin is 12345');
+  });
+
+  it('should not allow setting admin role without Administrator permissions', async () => {
+    message.guild.member.mockImplementation(() => ({
+      hasPermission: jest.fn().mockReturnValue(false),
+    }));
+
+    await messageHandler.adminCommand(message, '123');
+    expect(message.reply).toHaveBeenCalledWith(
+      'You do not have permissions to set the Admin Role'
+    );
+  });
+
+  it('should complain if stored roleId cannot found on discord server', async () => {
+    message.guild.roles.resolve.mockReturnValueOnce(null);
+
+    await messageHandler.adminCommand(message, undefined);
+    expect(message.reply).toHaveBeenCalledWith(
+      'Stored admin role is invalid (not found)'
+    );
+  });
+
+  it('should complain if given roleId cannot be found on server', async () => {
+    message.guild.roles.resolve.mockReturnValueOnce(null);
+
+    await messageHandler.adminCommand(message, '5432');
+    expect(message.reply).toHaveBeenCalledWith(
+      'Cannot find the given role on this server.'
+    );
+  });
+
+  it('should save the roleId if valid and found', async () => {
+    await messageHandler.adminCommand(message, '654');
+    expect(message.reply).toHaveBeenCalledWith('Set Admin Role to 654');
+    expect(guildConfigRepo.setAdminRole).toHaveBeenCalledWith('654');
   });
 });

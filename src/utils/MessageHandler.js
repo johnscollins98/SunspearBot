@@ -27,6 +27,8 @@ class MessageHandler {
       const [_, usedPrefix, command, args] = match;
       if (command === 'prefix' || (!command && usedPrefix !== prefix)) {
         this.prefixCommand(msg, args, prefix);
+      } else if (command === 'adminRole') {
+        this.adminCommand(msg, args);
       } else {
         msg.reply('Could not find this command.');
       }
@@ -64,6 +66,43 @@ class MessageHandler {
       const response = await this.guildConfigRepo.setPrefix(newPrefix.trim());
       return await msg.reply(`Set the prefix to \`${response.prefix}\`.`);
     }
+  }
+
+  /**
+   * Set or get admin role
+   *
+   * @param {Message} msg message that initiated command
+   * @param {string} roleId role to set the admin to
+   */
+  async adminCommand(msg, roleId) {
+    if (!roleId) {
+      //get current admin
+      const currentAdminId = await this.guildConfigRepo.getAdminRole();
+      const currentAdmin = msg.guild.roles.resolve(currentAdminId);
+
+      if (!currentAdminId) return msg.reply('No admin role set.');
+      return msg.reply(
+        currentAdmin
+          ? `Current Admin is ${currentAdmin}`
+          : 'Stored admin role is invalid (not found)'
+      );
+    }
+
+    // set admin
+    const hasPermission = msg.guild
+      .member(msg.author.id)
+      .hasPermission('ADMINISTRATOR');
+    if (!hasPermission) {
+      return msg.reply('You do not have permissions to set the Admin Role');
+    }
+
+    const resolvedRole = msg.guild.roles.resolve(roleId);
+    if (!resolvedRole) {
+      return msg.reply('Cannot find the given role on this server.');
+    }
+
+    const res = await this.guildConfigRepo.setAdminRole(roleId);
+    return msg.reply(`Set Admin Role to ${resolvedRole}`);
   }
 }
 
