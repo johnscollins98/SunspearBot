@@ -101,5 +101,9 @@ const funResponses = (msg) => {
 
   if (msg.content.toLowerCase().includes('underwater')) {
     msg.reply('Hello - we only do combat in the overworld here. Take your nonsense into the pit.');
+  };
+
+  if (msg.content.toLowerCase().includes('jimmy')) {
+    msg.reply('[What\'s Happening?]');
   }
 };
