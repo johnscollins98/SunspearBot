@@ -87,22 +87,6 @@ const funResponses = (msg) => {
     msg.reply('xB');
   }
 
-  if (msg.content.toLowerCase().includes('thief')) {
-    msg.reply(
-      'Hi, there - you have mentioned a banned profession. Have you considered trying something better, like Mesmer or Guardian?'
-    );
-  }
-
-  if (msg.content.toLowerCase().includes('pvp')) {
-    msg.reply(
-      'Hey - you just mentioned a BANNED gamemode. Please reconsider your choices.'
-    );
-  }
-
-  if (msg.content.toLowerCase().includes('underwater')) {
-    msg.reply('Hello - we only do combat in the overworld here. Take your nonsense into the pit.');
-  };
-
   if (msg.content.toLowerCase().includes('jimmy')) {
     msg.reply('[What\'s Happening?]');
   }
