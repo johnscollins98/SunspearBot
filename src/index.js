@@ -90,4 +90,8 @@ const funResponses = (msg) => {
   if (msg.content.includes(`<@224913098576887809>`) || msg.content.includes('<@!224913098576887809>')) {
     msg.reply('ELOSIA HAS INSTRUCTED ME TO SAY "DO WHAT YOU WANT".');
   }
+  
+  if (msg.content.toLowerCase().includes('jimmy')) {
+    msg.reply('[What\'s Happening?]');
+  }
 };
