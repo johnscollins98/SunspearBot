@@ -86,4 +86,8 @@ const funResponses = (msg) => {
   if (msg.content.match(/x\s*b/gim)) {
     msg.reply('xB');
   }
+
+  if (msg.content.includes(`<@224913098576887809>`) || msg.content.includes('<@!224913098576887809>')) {
+    msg.reply('ELOSIA HAS INSTRUCTED ME TO SAY "DO WHAT YOU WANT".');
+  }
 };
