@@ -39,7 +39,7 @@ Please send your account name in <#538466476667961354> so that we can invite you
 
 While you wait for an officer to invite you please check out the following channels:
 - <#427078611548372997> to read our rules.
-- <#707209414213500959> to see our events.
+- <#825385900841107476> to see our events.
 - <#710094018670755930> to assign yourself roles for specific content.`
     );
 
