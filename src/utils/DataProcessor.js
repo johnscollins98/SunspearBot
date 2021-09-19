@@ -28,7 +28,7 @@ class DataProcessor {
     return this._gw2Members
       .filter((m) => m.rank !== 'Alt')
       .filter(
-        (m) => !this.findDiscordRecord(m.name.split('.')[0].toLowerCase())
+        (m) => !this.findDiscordRecord(m.name)
       );
   }
 
@@ -98,7 +98,7 @@ class DataProcessor {
    * @returns
    */
   matchDiscordName = (testName, discordName) => {
-    testName = testName.split('.')[0].toLowerCase();
+    const filteredName = testName.split('.')[0].toLowerCase();
     discordName = discordName
       .toLowerCase()
       .replace(
@@ -107,7 +107,7 @@ class DataProcessor {
       ) // strip any emojis
       .trim(); // trim any leading/trailing whitespace (should only be present if they have an emoji at the start)
 
-    return discordName === testName || discordName.includes(`(${testName})`);
+    return discordName === filteredName || discordName.includes(`(${filteredName})`) || testName.toLowerCase() === discordName;
   };
 
   /**
