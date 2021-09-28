@@ -82,40 +82,6 @@ describe('get required actions', () => {
     ]);
   });
 
-  test('find multiple roles', () => {
-    const candidate = new MockDiscordUser(
-      'Test',
-      123,
-      ['Spearmarshal', 'General'],
-      12345767
-    );
-    const copyDiscord = [...ourDiscord];
-    copyDiscord[0] = candidate;
-    const dataProcessor = new DataProcessor(
-      ourGW2,
-      copyDiscord,
-      mockValidRanks
-    );
-
-    expect(dataProcessor.getRequiredActions()).toEqual([
-      {
-        key: 'Has Multiple Roles',
-        value: [`${candidate} (Spearmarshal, General)`],
-      },
-    ]);
-  });
-
-  test('find needs promotion', () => {
-    const dataProcessor = new DataProcessor(
-      mockGW2Members,
-      mockDiscordMembers,
-      mockValidRanks
-    );
-    expect(dataProcessor.getRequiredActions()).toEqual([
-      { key: 'Needs Promotion', value: ['NeedsPromoted.5432'] },
-    ]);
-  });
-
   test('find mismatched role', () => {
     const ourGw2 = [...ourGW2, { ...ourGW2[0], rank: 'General' }];
     const dataProcessor = new DataProcessor(ourGw2, ourDiscord, mockValidRanks);

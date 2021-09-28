@@ -41,21 +41,6 @@ class DataProcessor {
   }
 
   /**
-   * Get gw2 members that need a promotion
-   * @returns {Array<GW2Member>} gw2 members needing promotion
-   */
-  getNeedsPromotion = () => {
-    return this._gw2Members.filter((gw2) => {
-      if (gw2.rank !== 'Second Spear') return false;
-
-      const date = new Date(gw2.joined.split('T')[0]);
-      const diffMilliseconds = Math.abs(Date.now() - date);
-      const diffDays = Math.floor(diffMilliseconds / (1000 * 60 * 60 * 24));
-      return diffDays >= 14;
-    });
-  };
-
-  /**
    * Get discord accounts that can't be found in GW2.
    * @returns {Array<GuildMember>} excess discord members
    */
@@ -119,14 +104,6 @@ class DataProcessor {
   }
 
   /**
-   * Get Discord Members with multiple roles
-   * @returns {Array<GuildMember>}
-   */
-  getMultipleRoles() {
-    return this._discordMembers.filter((o) => this._getRoles(o).length > 1);
-  }
-
-  /**
    * Get an array of GW2 members with mismatching roles with Discord
    * @returns {Array<GW2Member>} mismatched members
    */
@@ -182,32 +159,11 @@ class DataProcessor {
       });
     }
 
-    const multipleRoles = this.getMultipleRoles();
-    if (multipleRoles.length) {
-      records.push({
-        key: 'Has Multiple Roles',
-        value: multipleRoles.map(
-          (o) =>
-            `${o} (${this._getRoles(o)
-              .map((o) => o.name)
-              .join(', ')})`
-        ),
-      });
-    }
-
     const mismatchedRoles = this.getMismatchedRoles();
     if (mismatchedRoles.length) {
       records.push({
         key: 'Mismatched Roles (GW2/Discord)',
         value: mismatchedRoles,
-      });
-    }
-
-    const needsPromotion = this.getNeedsPromotion();
-    if (needsPromotion.length) {
-      records.push({
-        key: 'Needs Promotion',
-        value: needsPromotion.map((o) => o.name),
       });
     }
 
